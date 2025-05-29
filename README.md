@@ -3,7 +3,7 @@
 **Enterprise-grade secure media storage with AI analysis, role-based access, and comprehensive monitoring.**
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/wronai/docker-platform)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
 
 ## 🎯 **Features Overview**
