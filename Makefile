@@ -1,6 +1,6 @@
 
 # Makefile (updated with monitoring commands)
-.PHONY: help infrastructure monitoring full-stack
+.PHONY: help infrastructure monitoring full-stack build up down logs clean setup-keycloak
 
 # Complete setup commands
 full-stack-with-monitoring: setup-keycloak
@@ -138,6 +138,89 @@ backup-monitoring:
 	docker run --rm -v grafana_data:/source -v $(PWD)/backups:/backup alpine tar czf /backup/grafana-backup-$(shell date +%Y%m%d).tar.gz -C /source .
 	docker run --rm -v prometheus_data:/source -v $(PWD)/backups:/backup alpine tar czf /backup/prometheus-backup-$(shell date +%Y%m%d).tar.gz -C /source .
 
+# Podstawowe komendy
+build:
+	docker-compose build
+
+up:
+	docker-compose up -d
+
+up-full:
+	docker-compose --profile full up -d
+
+down:
+	docker-compose down
+
+logs:
+	docker-compose logs -f
+
+clean:
+	docker-compose down -v
+	docker system prune -f
+
+# Keycloak setup
+setup-keycloak:
+	@echo "🔐 Konfigurowanie Keycloak..."
+	docker-compose up -d keycloak keycloak-db
+	sleep 30
+	chmod +x setup-keycloak.sh
+	./setup-keycloak.sh
+	./update-env.sh
+
+# Keycloak management
+keycloak-clean:
+	./setup-keycloak.sh --clean
+
+keycloak-export:
+	./setup-keycloak.sh --export-only
+
+# Media Vault with Keycloak
+up-with-auth: setup-keycloak
+	docker-compose up -d
+	@echo ""
+	@echo "🎉 Media Vault z Keycloak uruchomiony!"
+	@echo "🌐 Aplikacja: http://localhost"
+	@echo "🔐 Keycloak Admin: http://localhost:8443/admin"
+	@echo "👤 Test login: vaultadmin / admin123"
+
+# Restart specific services
+restart-api:
+	docker-compose restart media-vault-api
+
+restart-keycloak:
+	docker-compose restart keycloak
+
+# Status and debugging
+status:
+	docker-compose ps
+
+shell-api:
+	docker-compose exec media-vault-api sh
+
+shell-keycloak:
+	docker-compose exec keycloak bash
+
+# Quick start dla development
+dev-start: clean up-with-auth
+	@echo "🚀 Development environment ready!"
+
+# Production setup
+prod-setup:
+	@echo "🏭 Konfiguracja produkcyjna..."
+	@echo "⚠️  Pamiętaj o:"
+	@echo "   1. Zmianie haseł w production"
+	@echo "   2. Konfiguracji SSL"
+	@echo "   3. Backup strategii"
+	@echo "   4. Monitoringu"
+
+# Backup
+backup:
+	@echo "💾 Tworzenie backup..."
+	docker-compose exec media-vault-api sqlite3 /data/media.db ".backup /data/backup_$(shell date +%Y%m%d_%H%M%S).db"
+	./setup-keycloak.sh --export-only
+	tar -czf media-vault-backup-$(shell date +%Y%m%d).tar.gz data/ uploads/ media-vault-realm-export.json
+
+
 # Help
 help:
 	@echo "Media Vault - Available Commands:"
@@ -169,3 +252,27 @@ help:
 	@echo "  make down                        Stop all services"
 	@echo "  make clean                       Clean up everything"
 	@echo "  make logs                        Show application logs"
+	@echo "Media Vault + Keycloak - Dostępne komendy:"
+	@echo ""
+	@echo "Podstawowe:"
+	@echo "  make up-with-auth    Uruchom z pełną konfiguracją Keycloak"
+	@echo "  make setup-keycloak  Tylko konfiguracja Keycloak"
+	@echo "  make dev-start       Szybki start dla development"
+	@echo ""
+	@echo "Zarządzanie:"
+	@echo "  make up              Uruchom podstawowe serwisy"
+	@echo "  make down            Zatrzymaj wszystko"
+	@echo "  make clean           Wyczyść wszystko"
+	@echo "  make logs            Pokaż logi"
+	@echo ""
+	@echo "Keycloak:"
+	@echo "  make keycloak-clean  Wyczyść konfigurację Keycloak"
+	@echo "  make keycloak-export Eksportuj konfigurację"
+	@echo "  make restart-keycloak Restart Keycloak"
+	@echo ""
+	@echo "Debugging:"
+	@echo "  make status          Status kontenerów"
+	@echo "  make shell-api       Wejdź do API container"
+	@echo "  make backup          Stwórz backup"
+
+

@@ -1,0 +1,73 @@
+groups:
+  - name: media-vault-alerts
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85%"
+
+      # Disk Space Low
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100 < 10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space is running low"
+          description: "Less than 10% disk space remaining"
+
+      # Service Down
+      - alert: MediaVaultAPIDown
+        expr: up{job="media-vault-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Media Vault API is down"
+          description: "Media Vault API has been down for more than 1 minute"
+
+      # Keycloak Down
+      - alert: KeycloakDown
+        expr: up{job="keycloak"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Keycloak is down"
+          description: "Keycloak has been down for more than 1 minute"
+
+      # High Response Time
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds{quantile="0.95"} > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is above 2 seconds"
+
+      # Failed Login Attempts
+      - alert: HighFailedLogins
+        expr: increase(keycloak_failed_login_attempts[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of failed login attempts"
+          description: "More than 10 failed login attempts in 5 minutes"
+

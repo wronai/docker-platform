@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # Automated Incident Response
+  incident-response:
+    image: alpine:3.18
+    container_name: incident-response
+    volumes:
+      - ./scripts/automation:/scripts
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - PAGERDUTY_API_KEY=${PAGERDUTY_API_KEY}
+      - TEAMS_WEBHOOK_URL=${TEAMS_WEBHOOK_URL}
+    command: |
+      sh -c "
+        apk add --no-cache curl jq docker-cli
+        while true; do
+          /scripts/incident-handler.sh
+          sleep 30
+        done
+      "
+    restart: unless-stopped
+    networks:
+      - media-vault-network
+
+  # Capacity Planning Service
+  capacity-planner:
+    image: python:3.11-alpine
+    container_name: capacity-planner
+    volumes:
+      - ./scripts/capacity:/app
+      - ./data/capacity:/data
+    environment:
+      - PROMETHEUS_URL=http://prometheus:9090
+      - PREDICTION_DAYS=30
+      - ALERT_THRESHOLD=0.8
+    command: |
+      sh -c "
+        pip install requests numpy pandas
+        cd /app && python capacity_planner.py
+      "
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - media-vault-network
+
+  # Log Analysis & Anomaly Detection
+  log-analyzer:
+    image: python:3.11-alpine
+    container_name: log-analyzer
+    volumes:
+      - ./scripts/analysis:/app
+      - ./logs:/logs:ro
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ANOMALY_THRESHOLD=3.0
+      - ALERT_WEBHOOK=${SLACK_WEBHOOK_URL}
+    command: |
+      sh -c "
+        pip install elasticsearch scikit-learn numpy
+        cd /app && python anomaly_detector.py
+      "
+    profiles:
+      - analytics
+    restart: unless-stopped
+    networks:
+      - media-vault-network
+
+  # Performance Optimization Service
+  performance-optimizer:
+    image: alpine:3.18
+    container_name: performance-optimizer
+    volumes:
+      - ./scripts/optimization:/scripts
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - PROMETHEUS_URL=http://prometheus:9090
+      - OPTIMIZATION_SCHEDULE=0 3 * * *  # Daily at 3 AM
+    command: |
+      sh -c "
+        apk add --no-cache curl jq docker-cli dcron
+        echo '$OPTIMIZATION_SCHEDULE /scripts/optimize.sh' | crontab -
+        crond -f
+      "
+    restart: unless-stopped
+    networks:
+      - media-vault-network
+
+  # Certificate Management
+  cert-manager:
+    image: alpine:3.18
+    container_name: cert-manager
+    volumes:
+      - ./certs:/certs
+      - ./scripts/certs:/scripts
+    environment:
+      - DOMAIN=${PRODUCTION_DOMAIN}
+      - EMAIL=${ADMIN_EMAIL}
+      - CERT_RENEWAL_DAYS=30
+    command: |
+      sh -c "
+        apk add --no-cache openssl curl
+        /scripts/cert-monitor.sh
+      "
+    restart: unless-stopped
+    networks:
+      - media-vault-network
+    profiles:
+      - production
+
+networks:
+  media-vault-network:
+    external: true
+

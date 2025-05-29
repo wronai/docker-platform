@@ -49,7 +49,8 @@
 
 ```bash
 # 1. Clone and setup
-git clone <repository-url> media-vault && cd media-vault
+git clone https://github.com/wronai/docker-platform
+cd docker-platform
 
 # 2. Start everything with monitoring
 make full-stack-with-monitoring
@@ -386,3 +387,151 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Media Vault** - *Secure, intelligent, and scalable media management for the modern enterprise.*
+
+
+
+
+# 🏗️ Media Vault - Complete Infrastructure Administration Guide
+
+## 🎯 **Executive Summary**
+
+Media Vault Infrastructure provides **enterprise-grade** monitoring, alerting, automation, and management capabilities:
+
+- **📊 360° Monitoring** - Metrics, logs, tracing, alerts
+- **🤖 Automated Incident Response** - Self-healing capabilities
+- **🔮 Predictive Analytics** - Capacity planning & forecasting
+- **🛡️ Security & Compliance** - Automated scanning & response
+- **⚡ Performance Optimization** - Automated tuning & scaling
+
+---
+
+## 🚀 **Quick Start (3 Commands)**
+
+```bash
+# 1. Setup infrastructure
+make infrastructure
+
+# 2. Start with authentication  
+make full-stack
+
+# 3. Check status
+make infra-status
+```
+
+**🌐 Access Points:**
+- **Main App**: http://localhost
+- **Grafana**: http://localhost:3333 (admin/grafana123)
+- **Prometheus**: http://localhost:9090
+- **Portainer**: http://localhost:9000
+- **AlertManager**: http://localhost:9093
+
+---
+
+## 📊 **Monitoring Stack**
+
+### **Core Metrics (Prometheus)**
+```yaml
+System Metrics:
+  ✅ CPU usage per container and host
+  ✅ Memory utilization and pressure
+  ✅ Disk space and I/O performance
+  ✅ Network traffic and errors
+  ✅ Container lifecycle events
+
+Application Metrics:
+  ✅ API response times (95th percentile)
+  ✅ Request rates and error rates  
+  ✅ Database query performance
+  ✅ Upload success/failure rates
+  ✅ Authentication events (Keycloak)
+
+Business Metrics:
+  ✅ Active users and sessions
+  ✅ Storage utilization trends
+  ✅ Content analysis results
+  ✅ Security incident counts
+```
+
+### **Visualization (Grafana)**
+```yaml
+Dashboards Available:
+  📊 Infrastructure Overview - System health
+  📈 Application Performance - API metrics  
+  🔐 Security Dashboard - Auth & threats
+  💾 Storage Analytics - Vault usage
+  🐳 Container Monitoring - Docker stats
+  📡 Network Analysis - Traffic patterns
+  🎯 Business Intelligence - KPIs
+```
+
+### **Advanced Logging**
+```yaml
+Log Aggregation Options:
+  🪵 Loki + Promtail (Lightweight)
+    - Container logs centralization
+    - Grafana integration
+    - Label-based querying
+    
+  📊 ELK Stack (Advanced)
+    - Elasticsearch search
+    - Kibana visualization  
+    - Advanced analytics
+    - Full-text search
+```
+
+---
+
+## 🚨 **Advanced Alerting System**
+
+### **Alert Categories**
+```yaml
+🔴 CRITICAL (Immediate Action):
+  - Service completely down (>1 min)
+  - Disk will fill in 4 hours
+  - Database connection exhaustion
+  - Security breach indicators
+
+🟡 WARNING (Investigation Required):
+  - High resource usage (>80% for 5 min)
+  - API response time degraded (>5s)
+  - Failed login spike (>20 in 5 min)
+  - Memory pressure (>85%)
+
+🔵 INFO (Monitoring):
+  - Scheduled maintenance
+  - Performance optimizations
+  - Backup completion
+  - Certificate renewals
+```
+
+### **Notification Channels**
+```yaml
+Alert Delivery:
+  📧 Email - admin@mediavault.com
+  💬 Slack - #alerts, #warnings channels
+  📱 PagerDuty - Critical issues only
+  📊 Grafana - Dashboard notifications
+  🔔 Teams - Alternative to Slack
+```
+
+### **Automated Responses**
+```yaml
+Self-Healing Actions:
+  🔄 Service restart for container failures
+  🧹 Automatic cleanup for disk space
+  ⚡ Resource rebalancing for high usage
+  🛡️ Security lockdown for threats
+  📊 Performance optimization triggers
+```
+
+---
+
+## 🤖 **Intelligent Automation**
+
+### **Incident Response Automation**
+```bash
+# Automated actions for common issues:
+Service Down → Docker restart → Health check → Notify
+High Memory → Clear caches → Restart services → Monitor
+Disk Full → Cleanup logs → Docker prune → Expand if needed
+Security

@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: 'Media Vault Dashboards'
+  - name: 'default'
     orgId: 1
-    folder: 'Media Vault'
+    folder: ''
     type: file
     disableDeletion: false
     updateIntervalSeconds: 10
