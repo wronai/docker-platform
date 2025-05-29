@@ -70,7 +70,7 @@ services:
     depends_on:
       keycloak-db:
         condition: service_healthy
-    command: ["-b", "0.0.0.0", "-Dkeycloak.profile.feature.upload_scripts=enabled"]
+    command: ["start", "--optimized", "-Djboss.http.port=8080", "-Djboss.https.port=8443", "-Djboss.management.http.port=9990"]
     restart: unless-stopped
     networks:
       - media-vault-network
