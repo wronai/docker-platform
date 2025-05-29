@@ -22,48 +22,48 @@ services:
       timeout: 10s
       retries: 5
 
-  # Keycloak Identity Provider using Bitnami image for better stability
+  # Keycloak Identity Provider using Bitnami image
   keycloak:
     image: bitnami/keycloak:26.2.5
     container_name: keycloak
-    command: ["/opt/bitnami/scripts/keycloak/run.sh"]
     environment:
-      # Database
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_password}
-      KC_DB_SCHEMA: public
-      
-      # Use legacy database configuration for Keycloak 23.0
-      KC_DB_URL_DATABASE: keycloak
-      KC_DB_URL_HOST: keycloak-db
-      KC_DB_URL_PORT: 5432
-      KC_DB_URL_PROPERTIES: sslmode=disable
+      # Database configuration
+      KEYCLOAK_DATABASE_HOST: keycloak-db
+      KEYCLOAK_DATABASE_PORT: 5432
+      KEYCLOAK_DATABASE_NAME: keycloak
+      KEYCLOAK_DATABASE_USER: keycloak
+      KEYCLOAK_DATABASE_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_password}
+      KEYCLOAK_DATABASE_SCHEMA: public
 
       # Admin user
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin123}
-
-      # Production settings
-      KC_HOSTNAME: ${KC_HOSTNAME:-localhost}
-      KC_HOSTNAME_PORT: ${KEYCLOAK_PORT:-8443}
-      KC_HOSTNAME_STRICT_HTTPS: false
-      KC_HOSTNAME_STRICT: false
-      KC_PROXY: edge
-      KC_HTTP_ENABLED: true
-      KC_HTTP_PORT: 8080
-      KC_HTTPS_PORT: 8443
-      KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
-      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
-
-      # Performance
-      KC_DB_POOL_INITIAL_SIZE: 5
-      KC_DB_POOL_MAX_SIZE: 20
-
-      # Metrics
-      KC_METRICS_ENABLED: true
-      KC_HEALTH_ENABLED: true
+      
+      # Server configuration
+      KEYCLOAK_HTTP_PORT: 8080
+      KEYCLOAK_HTTPS_PORT: 8443
+      KEYCLOAK_PROXY: edge
+      KEYCLOAK_ENABLE_HTTPS: "yes"
+      KEYCLOAK_ENABLE_STATISTICS: "true"
+      KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: "true"
+      
+      # Host configuration
+      KEYCLOAK_HOSTNAME: ${KC_HOSTNAME:-localhost}
+      KEYCLOAK_HOSTNAME_STRICT: "false"
+      KEYCLOAK_HOSTNAME_STRICT_HTTPS: "false"
+      
+      # JVM settings
+      KEYCLOAK_JAVA_OPTS: "-Xms512m -Xmx1024m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true"
+      
+      # Logging
+      KEYCLOAK_LOG_LEVEL: "INFO"
+      
+      # Cache configuration
+      KEYCLOAK_CACHE: "local"
+      KEYCLOAK_CACHE_STACK: "kubernetes"
+      
+      # Development settings
+      KEYCLOAK_DEVELOPMENT: "true"
     ports:
       - "${KEYCLOAK_HTTP_PORT:-8082}:8080"
       - "${KEYCLOAK_HTTPS_PORT:-8445}:8443"
