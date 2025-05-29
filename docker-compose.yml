@@ -64,26 +64,26 @@ services:
       KC_METRICS_ENABLED: true
       KC_HEALTH_ENABLED: true
     ports:
-      - "${KEYCLOAK_HTTPS_PORT:-8445}:8443"
       - "${KEYCLOAK_HTTP_PORT:-8082}:8080"
+      - "${KEYCLOAK_HTTPS_PORT:-8445}:8443"
       - "9990:9990"  # Management port
     depends_on:
       keycloak-db:
         condition: service_healthy
-    command: ["start", "--optimized", "-Djboss.http.port=8080", "-Djboss.https.port=8443", "-Djboss.management.http.port=9990"]
     restart: unless-stopped
     networks:
       - media-vault-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/realms/master"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/realms/master"]
       interval: 30s
       timeout: 10s
       retries: 10
-      start_period: 60s
+      start_period: 120s
     volumes:
-      - ./keycloak/themes:/opt/jboss/keycloak/themes
-      - ./keycloak/certs:/etc/x509/https
-      - ./keycloak/import:/opt/jboss/keycloak/import
+      - ./keycloak/themes:/opt/bitnami/keycloak/themes
+      - ./keycloak/certs:/opt/bitnami/keycloak/certs
+      - ./keycloak/import:/opt/bitnami/keycloak/data/import
+      - keycloak_data:/bitnami/keycloak
 
   # Media Vault API Backend
   media-vault-api:
@@ -310,6 +310,8 @@ volumes:
   caddy_data:
     driver: local
   caddy_config:
+    driver: local
+  keycloak_data:
     driver: local
   keycloak_db_data:
     driver: local
