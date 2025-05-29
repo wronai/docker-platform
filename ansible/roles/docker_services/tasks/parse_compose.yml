@@ -1,0 +1,19 @@
+---
+- name: Parse Docker Compose file
+  community.docker.docker_compose:
+    project_src: "{{ docker_compose_file | dirname }}"
+    project_name: "{{ docker_compose_project_name }}"
+    state: present
+  register: docker_compose_info
+  tags: docker_compose
+
+- name: Set fact for running services
+  ansible.builtin.set_fact:
+    running_services: "{{ docker_compose_info.services | default([]) }}"
+  tags: docker_compose
+
+- name: Debug running services
+  ansible.builtin.debug:
+    var: running_services
+  when: debug | default(false)
+  tags: docker_compose
