@@ -163,8 +163,8 @@ setup-keycloak:
 	@echo "🔐 Konfigurowanie Keycloak..."
 	docker-compose up -d keycloak keycloak-db
 	sleep 30
-	chmod +x setup-keycloak.sh
-	./setup-keycloak.sh
+	chmod +x keycloak/setup-keycloak.sh
+	./keycloak/setup-keycloak.sh
 	./update-env.sh
 
 # Keycloak management
