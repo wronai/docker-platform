@@ -7,6 +7,8 @@ WORKDIR /app
 # Copy go mod and sum files
 COPY go.mod go.sum ./
 
+# Initialize the Go module if not already done
+RUN go mod init media-vault 2>/dev/null || true
 
 # Download all dependencies
 RUN go mod download
@@ -14,6 +16,8 @@ RUN go mod download
 # Copy the source code
 COPY . .
 
+# Tidy up the module dependencies
+RUN go mod tidy
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -o media-vault-api ./cmd

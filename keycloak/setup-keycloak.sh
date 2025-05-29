@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Konfiguracja
-KEYCLOAK_URL="http://localhost:8443"
+KEYCLOAK_URL="https://localhost:8445"
 ADMIN_USER="admin"
 ADMIN_PASS="admin123"
 REALM_NAME="media-vault"

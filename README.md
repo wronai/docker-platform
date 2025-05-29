@@ -5,8 +5,295 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/wronai/docker-platform)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
+[![Documentation](https://img.shields.io/badge/docs-📘-blueviolet)](#documentation-)
+[![Project Status](https://img.shields.io/badge/status-active%20development-yellowgreen)](#-project-status)
 
-## 🎯 **Features Overview**
+## 📋 Table of Contents
+- [🚀 Features](#-features)
+- [🏗️ System Architecture](#%EF%B8%8F-system-architecture)
+- [📊 User Flows](#-user-flows)
+- [🔧 Getting Started](#-getting-started)
+- [🧪 Testing](#-testing)
+- [📈 Monitoring](#-monitoring)
+- [📚 Documentation](#-documentation)
+- [🛠️ Development](#%EF%B8%8F-development)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+
+## 🏗️ System Architecture
+
+### High-Level Architecture
+
+```mermaid
+graph TD
+    A[Client] -->|HTTPS| B[Caddy Reverse Proxy]
+    B --> C[Flutter Web Frontend]
+    B --> D[Admin Panel]
+    B --> E[Media Vault API]
+    E --> F[Keycloak Auth]
+    E --> G[PostgreSQL]
+    E --> H[NSFW Analyzer]
+    E --> I[Media Analyzer]
+    J[Prometheus] --> K[Grafana]
+    J --> L[Alert Manager]
+    M[Node Exporter] --> J
+    N[cAdvisor] --> J
+```
+
+### Component Diagram
+
+```mermaid
+classDiagram
+    class MediaVaultAPI {
+        +uploadMedia()
+        +getMedia()
+        +analyzeContent()
+    }
+    class Keycloak {
+        +authenticate()
+        +authorize()
+    }
+    class PostgreSQL {
+        +storeMetadata()
+        +retrieveMetadata()
+    }
+    class NSFWAnalyzer {
+        +checkContent()
+    }
+    
+    MediaVaultAPI --> Keycloak
+    MediaVaultAPI --> PostgreSQL
+    MediaVaultAPI --> NSFWAnalyzer
+```
+
+## 📊 User Flows
+
+### User Registration & Authentication
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Keycloak
+    participant Backend
+    
+    User->>Frontend: Access application
+    Frontend->>Keycloak: Redirect to login
+    User->>Keycloak: Enter credentials
+    Keycloak->>Frontend: Return JWT token
+    Frontend->>Backend: Include token in requests
+    Backend->>Keycloak: Validate token
+    Keycloak->>Backend: Token validation response
+    Backend->>Frontend: Serve protected content
+```
+
+### Media Upload Flow
+
+```mermaid
+graph TD
+    A[User] -->|1. Select files| B[Frontend]
+    B -->|2. Request upload URL| C[Backend]
+    C -->|3. Generate signed URL| B
+    B -->|4. Upload file| D[Storage]
+    B -->|5. Confirm upload| C
+    C -->|6. Process media| E[Analyzer]
+    E -->|7. Store metadata| F[Database]
+    C -->|8. Update UI| B
+    B -->|9. Show success| A
+```
+
+### System Monitoring Flow
+
+```mermaid
+sequenceDiagram
+    participant Admin
+    participant Grafana
+    participant Prometheus
+    participant Exporters
+    participant Services
+    
+    Admin->>Grafana: Access dashboard
+    Grafana->>Prometheus: Query metrics
+    Prometheus->>Exporters: Scrape metrics
+    Exporters->>Services: Collect metrics
+    Services-->>Exporters: Return metrics
+    Exporters-->>Prometheus: Forward metrics
+    Prometheus-->>Grafana: Return data
+    Grafana-->>Admin: Display dashboard
+```
+
+## 🔧 Getting Started
+
+### Prerequisites
+
+- Docker 20.10+ and Docker Compose
+- At least 4GB RAM (8GB recommended)
+- Ports 80, 443, 8080, 8443, 3000 available
+
+### Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/wronai/docker-platform.git
+   cd docker-platform
+   ```
+
+2. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. Start the stack:
+   ```bash
+   make up
+   ```
+
+4. Access the applications:
+   - Web UI: https://localhost
+   - Admin Panel: https://admin.localhost
+   - Keycloak: https://auth.localhost
+   - Grafana: http://localhost:3000
+
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run unit tests
+make test-unit
+
+# Run integration tests
+make test-integration
+
+# Run end-to-end tests
+make test-e2e
+```
+
+### Test Coverage
+
+```bash
+# Generate test coverage report
+make coverage
+
+# View coverage in browser
+make coverage-html
+```
+
+## 📈 Monitoring
+
+### Access Monitoring Tools
+
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **Prometheus**: http://localhost:9090
+- **Alertmanager**: http://localhost:9093
+
+### Key Metrics
+
+- API response times
+- Error rates
+- Resource usage
+- User activity
+- Storage utilization
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+docker-platform/
+├── media-vault-backend/    # Backend API service
+├── media-vault-analyzer/   # AI analysis service
+├── media-vault-admin/      # Admin dashboard
+├── flutter-web/           # Frontend application
+├── keycloak/              # Keycloak configuration
+├── monitoring/            # Monitoring stack
+├── docker-compose.yml     # Main compose file
+└── Makefile              # Development commands
+```
+
+### Development Workflow
+
+1. Start development environment:
+   ```bash
+   make dev
+   ```
+
+2. Run services in watch mode:
+   ```bash
+   # Backend
+   make watch-backend
+   
+   # Frontend
+   make watch-frontend
+   ```
+
+3. Run linters and formatters:
+   ```bash
+   make lint
+   make format
+   ```
+
+4. Check for security issues:
+   ```bash
+   make security-scan
+   ```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+
+## 🚀 Deployment
+
+### Production Deployment
+
+1. Set up production environment:
+   ```bash
+   make env-prod
+   ```
+
+2. Deploy the stack:
+   ```bash
+   make deploy
+   ```
+
+3. Verify deployment:
+   ```bash
+   make status
+   ```
+
+### Scaling
+
+```bash
+# Scale backend services
+make scale-backend replicas=3
+
+# Scale frontend
+make scale-frontend replicas=2
+```
+
+## 📚 Documentation
+
+### API Documentation
+
+- [API Reference](docs/API.md)
+- [Authentication Guide](docs/AUTHENTICATION.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+
+### Architecture Decisions
+
+- [Architecture Decision Records](docs/architecture/decisions/)
+- [System Design](docs/architecture/DESIGN.md)
+
+## 🎯 Features Overview
 
 ### 👤 **User Features**
 - 🔐 **Keycloak SSO Authentication** - Secure single sign-on

@@ -1,10 +1,21 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.utils.html import format_html
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.contrib.auth import get_user_model
 from .models import UserProfile, AuditLog
 
-# Register the CustomUser model
 User = get_user_model()
+
+
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = 'Profile'
+    fk_name = 'user'
+    readonly_fields = ('created_at', 'updated_at')
+
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
