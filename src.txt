@@ -1,0 +1,266 @@
+media-vault/
+├── docker-compose.yml
+├── docker-compose.monitoring.yml
+├── docker-compose.infrastructure.yml
+├── .env
+├── Makefile
+├── README.md
+│
+├── keycloak/
+│   ├── keycloak-setup.json
+│   ├── setup-keycloak.sh
+│   └── update-env.sh
+│
+├── caddy/
+│   ├── Caddyfile
+│   └── Caddyfile.prod
+│
+├── monitoring/
+│   ├── prometheus/
+│   │   ├── prometheus.yml
+│   │   └── rules/
+│   │       ├── media-vault.yml
+│   │       └── advanced-alerts.yml
+│   ├── grafana/
+│   │   ├── provisioning/
+│   │   │   ├── dashboards/
+│   │   │   │   └── dashboard.yml
+│   │   │   └── datasources/
+│   │   │       └── prometheus.yml
+│   │   └── dashboards/
+│   │       ├── infrastructure.json
+│   │       ├── application.json
+│   │       ├── security.json
+│   │       └── business.json
+│   ├── alertmanager/
+│   │   └── alertmanager.yml
+│   ├── loki/
+│   │   └── loki.yml
+│   └── promtail/
+│       └── promtail.yml
+│
+├── media-vault-backend/
+│   ├── Dockerfile
+│   ├── go.mod
+│   ├── go.sum
+│   ├── cmd/
+│   │   └── main.go
+│   ├── internal/
+│   │   ├── auth/
+│   │   │   ├── keycloak.go
+│   │   │   ├── middleware.go
+│   │   │   └── roles.go
+│   │   ├── handlers/
+│   │   │   ├── vault.go
+│   │   │   ├── admin.go
+│   │   │   ├── partner.go
+│   │   │   ├── upload.go
+│   │   │   └── photos.go
+│   │   ├── models/
+│   │   │   ├── vault_file.go
+│   │   │   ├── user.go
+│   │   │   ├── photo.go
+│   │   │   └── description.go
+│   │   ├── services/
+│   │   │   ├── vault_service.go
+│   │   │   ├── photo_service.go
+│   │   │   ├── description_service.go
+│   │   │   └── sharing_service.go
+│   │   ├── database/
+│   │   │   ├── sqlite.go
+│   │   │   └── migrations.go
+│   │   └── utils/
+│   │       ├── image_processing.go
+│   │       ├── thumbnails.go
+│   │       └── metadata.go
+│   └── migrations/
+│       ├── 001_initial.sql
+│       ├── 002_photos.sql
+│       └── 003_descriptions.sql
+│
+├── media-vault-analyzer/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── analyzer.py
+│   ├── processors/
+│   │   ├── image_analyzer.py
+│   │   ├── description_generator.py
+│   │   ├── nsfw_detector.py
+│   │   └── metadata_extractor.py
+│   └── models/
+│       └── nsfw_model.h5
+│
+├── flutter_frontend/
+│   ├── Dockerfile.web
+│   ├── pubspec.yaml
+│   ├── analysis_options.yaml
+│   ├── web/
+│   │   ├── index.html
+│   │   ├── manifest.json
+│   │   ├── favicon.png
+│   │   └── icons/
+│   │       ├── Icon-192.png
+│   │       └── Icon-512.png
+│   ├── lib/
+│   │   ├── main.dart
+│   │   ├── services/
+│   │   │   ├── auth_service.dart
+│   │   │   ├── media_vault_service.dart
+│   │   │   ├── photo_service.dart
+│   │   │   └── description_service.dart
+│   │   ├── providers/
+│   │   │   ├── vault_provider.dart
+│   │   │   ├── photo_provider.dart
+│   │   │   └── user_provider.dart
+│   │   ├── models/
+│   │   │   ├── vault_file.dart
+│   │   │   ├── photo.dart
+│   │   │   ├── user.dart
+│   │   │   └── description.dart
+│   │   ├── screens/
+│   │   │   ├── login_screen.dart
+│   │   │   ├── vault_home_screen.dart
+│   │   │   ├── user/
+│   │   │   │   ├── user_dashboard.dart
+│   │   │   │   ├── photo_upload.dart
+│   │   │   │   ├── photo_gallery.dart
+│   │   │   │   ├── photo_detail.dart
+│   │   │   │   └── description_editor.dart
+│   │   │   ├── admin/
+│   │   │   │   ├── admin_dashboard.dart
+│   │   │   │   ├── user_management.dart
+│   │   │   │   ├── system_stats.dart
+│   │   │   │   ├── content_moderation.dart
+│   │   │   │   └── security_logs.dart
+│   │   │   └── partner/
+│   │   │       ├── partner_dashboard.dart
+│   │   │       ├── bulk_upload.dart
+│   │   │       ├── photo_management.dart
+│   │   │       ├── batch_editor.dart
+│   │   │       ├── sharing_management.dart
+│   │   │       └── analytics.dart
+│   │   ├── widgets/
+│   │   │   ├── photo_card.dart
+│   │   │   ├── upload_zone.dart
+│   │   │   ├── description_panel.dart
+│   │   │   ├── sharing_dialog.dart
+│   │   │   ├── bulk_operations.dart
+│   │   │   └── role_guard.dart
+│   │   └── utils/
+│   │       ├── constants.dart
+│   │       ├── theme.dart
+│   │       ├── validators.dart
+│   │       └── permissions.dart
+│   └── assets/
+│       ├── images/
+│       │   ├── logo.png
+│       │   └── placeholder.png
+│       └── icons/
+│           └── app_icon.png
+│
+├── media-vault-admin/
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── src/
+│   │   ├── index.html
+│   │   ├── users.html
+│   │   ├── system.html
+│   │   ├── security.html
+│   │   ├── js/
+│   │   │   ├── vault-admin.js
+│   │   │   ├── keycloak-admin.js
+│   │   │   ├── user-management.js
+│   │   │   ├── system-monitoring.js
+│   │   │   └── charts.js
+│   │   └── css/
+│   │       ├── admin.css
+│   │       └── dashboard.css
+│   └── config/
+│       └── admin-config.js
+│
+├── nsfw-analyzer/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── analyzer.py
+│   ├── model_loader.py
+│   └── models/
+│       └── nsfw_mobilenet.h5
+│
+├── scripts/
+│   ├── infrastructure-setup.sh
+│   ├── infrastructure-health.sh
+│   ├── performance-report.sh
+│   ├── automation/
+│   │   ├── incident-handler.sh
+│   │   └── auto-scaling.sh
+│   ├── capacity/
+│   │   └── capacity_planner.py
+│   ├── optimization/
+│   │   └── optimize.sh
+│   ├── backup/
+│   │   ├── backup.sh
+│   │   └── restore.sh
+│   └── security/
+│       ├── security-scan.sh
+│       └── audit.sh
+│
+├── data/
+│   ├── media.db
+│   ├── backups/
+│   └── logs/
+│
+├── uploads/
+│   ├── originals/
+│   ├── thumbnails/
+│   └── processed/
+│
+├── processing/
+│   ├── incoming/
+│   └── temp/
+│
+├── docs/
+│   ├── API.md
+│   ├── DEPLOYMENT.md
+│   ├── ARCHITECTURE.md
+│   ├── MONITORING.md
+│   ├── SECURITY.md
+│   └── USER_GUIDE.md
+│
+├── tests/
+│   ├── backend/
+│   │   ├── auth_test.go
+│   │   ├── handlers_test.go
+│   │   └── services_test.go
+│   ├── frontend/
+│   │   └── test/
+│   │       ├── widget_test.dart
+│   │       └── integration_test.dart
+│   └── e2e/
+│       ├── user_flow_test.js
+│       └── admin_flow_test.js
+│
+├── deployment/
+│   ├── kubernetes/
+│   │   ├── namespace.yaml
+│   │   ├── configmap.yaml
+│   │   ├── secrets.yaml
+│   │   ├── deployments.yaml
+│   │   ├── services.yaml
+│   │   ├── ingress.yaml
+│   │   └── monitoring.yaml
+│   ├── helm/
+│   │   ├── Chart.yaml
+│   │   ├── values.yaml
+│   │   ├── values-prod.yaml
+│   │   └── templates/
+│   └── terraform/
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+│
+└── tools/
+    ├── format.sh
+    ├── lint.sh
+    ├── test.sh
+    ├── build.sh
+    └── deploy.sh

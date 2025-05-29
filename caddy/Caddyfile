@@ -1,0 +1,55 @@
+{
+    # Global options
+    auto_https off  # For local development
+    admin off
+}
+
+localhost {
+    # Flutter Web App (main interface)
+    handle /* {
+        reverse_proxy flutter-web:80
+    }
+
+    # Media Vault API
+    handle /api/* {
+        reverse_proxy media-vault-api:8080
+    }
+
+    # Admin Panel
+    handle /admin/* {
+        reverse_proxy media-vault-admin:80
+    }
+
+    # Keycloak Identity Provider
+    handle /auth/* {
+        reverse_proxy keycloak:8080
+    }
+
+    # File uploads - increased limit
+    request_body {
+        max_size 100MB
+    }
+
+    # CORS headers
+    header {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+        Access-Control-Allow-Credentials "true"
+    }
+
+    # Security headers
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        X-XSS-Protection "1; mode=block"
+    }
+
+    # Logging
+    log {
+        output stdout
+        format console
+    }
+}
+
