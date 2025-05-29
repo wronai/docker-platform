@@ -1,0 +1,12 @@
+---
+- name: Test Docker Compose Services
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  become: yes
+  vars_files:
+    - group_vars/all.yml
+
+  roles:
+    - role: docker_services
+      tags: [docker, services, test]
