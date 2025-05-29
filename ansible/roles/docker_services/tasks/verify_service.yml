@@ -1,0 +1,13 @@
+---
+- name: Check if {{ service.name }} is running
+  ansible.builtin.assert:
+    that:
+      - service.name in running_services
+      - running_services[service.name].state == service.state | default('running')
+      - running_services[service.name].image == service.image
+    success_msg: "✅ {{ service.name }} is running with image {{ service.image }}"
+    fail_msg: |
+      ❌ {{ service.name }} is not running as expected.
+      Expected: image={{ service.image }}, state={{ service.state | default('running') }}
+      Found: {{ running_services[service.name] | default('Service not found') }}
+  tags: services
