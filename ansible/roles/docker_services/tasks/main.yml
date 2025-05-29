@@ -1,0 +1,52 @@
+---
+- name: Install required Python packages
+  ansible.builtin.pip:
+    name:
+      - docker
+      - docker-compose
+    state: present
+
+- name: Ensure Docker Compose is running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if Docker Compose is installed
+  ansible.builtin.command: docker-compose --version
+  register: docker_compose_version
+  changed_when: false
+  check_mode: no
+  tags: docker_compose
+
+- name: Fail if Docker Compose is not installed
+  ansible.builtin.fail:
+    msg: "Docker Compose is required but not installed"
+  when: docker_compose_version.rc != 0
+
+- name: Verify Docker Compose file exists
+  ansible.builtin.stat:
+    path: "{{ docker_compose_file }}"
+  register: compose_file_stat
+  tags: docker_compose
+
+- name: Fail if Docker Compose file doesn't exist
+  ansible.builtin.fail:
+    msg: "Docker Compose file not found at {{ docker_compose_file }}"
+  when: not compose_file_stat.stat.exists
+
+- name: Parse Docker Compose file
+  ansible.builtin.include_tasks: parse_compose.yml
+  tags: docker_compose
+
+- name: Verify services are running
+  ansible.builtin.include_tasks: verify_services.yml
+  tags: services
+
+- name: Test service health checks
+  ansible.builtin.include_tasks: test_health_checks.yml
+  tags: health_checks
+
+- name: Test service connectivity
+  ansible.builtin.include_tasks: test_connectivity.yml
+  tags: connectivity

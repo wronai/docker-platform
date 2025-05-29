@@ -1,0 +1,116 @@
+---
+# Docker Compose project settings
+docker_compose_project_name: media-vault
+docker_compose_file: ../docker-compose.yml
+
+# Service ports
+service_ports:
+  keycloak: 8443
+  media_vault_api: 8080
+  nsfw_analyzer: 8501
+  flutter_web: 3000
+  admin_panel: 3001
+  caddy: 80
+
+# Expected service statuses
+expected_services:
+  - name: keycloak-db
+    image: postgres:15
+    state: running
+    ports: []
+    healthcheck: true
+    depends_on: []
+
+  - name: keycloak
+    image: quay.io/keycloak/keycloak:23.0
+    state: running
+    ports:
+      - "{{ service_ports.keycloak }}:8080"
+    healthcheck: true
+    depends_on:
+      - keycloak-db
+
+  - name: media-vault-api
+    image: media-vault-api:latest
+    state: running
+    ports:
+      - "{{ service_ports.media_vault_api }}:8080"
+    healthcheck: true
+    depends_on:
+      - keycloak
+
+  - name: media-vault-analyzer
+    image: media-vault-analyzer:latest
+    state: running
+    ports: []
+    healthcheck: false
+    depends_on:
+      - media-vault-api
+      - keycloak
+
+  - name: nsfw-analyzer
+    image: nsfw-analyzer:latest
+    state: running
+    ports:
+      - "{{ service_ports.nsfw_analyzer }}:8501"
+    healthcheck: false
+    depends_on:
+      - media-vault-api
+      - keycloak
+    profiles:
+      - full
+
+  - name: flutter-web
+    image: flutter-web:latest
+    state: running
+    ports:
+      - "{{ service_ports.flutter_web }}:80"
+    healthcheck: false
+    depends_on:
+      - media-vault-api
+      - keycloak
+
+  - name: media-vault-admin
+    image: media-vault-admin:latest
+    state: running
+    ports:
+      - "{{ service_ports.admin_panel }}:80"
+    healthcheck: false
+    depends_on:
+      - media-vault-api
+      - keycloak
+
+  - name: caddy-proxy
+    image: caddy:2-alpine
+    state: running
+    ports:
+      - "{{ service_ports.caddy }}:80"
+      - "443:443"
+    healthcheck: false
+    depends_on:
+      - media-vault-api
+      - flutter-web
+      - media-vault-admin
+
+# Health check endpoints
+health_checks:
+  keycloak:
+    url: "https://localhost:{{ service_ports.keycloak }}/realms/master/.well-known/openid-configuration"
+    validate_certs: no
+    status_code: 200
+    
+  media_vault_api:
+    url: "http://localhost:{{ service_ports.media_vault_api }}/health"
+    status_code: 200
+    
+  nsfw_analyzer:
+    url: "http://localhost:{{ service_ports.nsfw_analyzer }}/health"
+    status_code: 200
+    
+  flutter_web:
+    url: "http://localhost:{{ service_ports.flutter_web }}"
+    status_code: 200
+    
+  admin_panel:
+    url: "http://localhost:{{ service_ports.admin_panel }}"
+    status_code: 200
