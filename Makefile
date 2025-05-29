@@ -1,6 +1,27 @@
 
-# Makefile (updated with monitoring commands)
-.PHONY: help infrastructure monitoring full-stack build up down logs clean setup-keycloak
+# Media Vault - Makefile
+
+# Color definitions
+GREEN  := $(shell tput -Txterm setaf 2)
+YELLOW := $(shell tput -Txterm setaf 3)
+WHITE  := $(shell tput -Txterm setaf 7)
+RESET  := $(shell tput -Txterm sgr0)
+
+# Default target
+.DEFAULT_GOAL := help
+
+# Phony targets
+.PHONY: help \
+        init \
+        up down restart \
+        build rebuild \
+        test test-unit test-integration test-e2e \
+        lint format \
+        logs \
+        clean \
+        setup-keycloak \
+        deploy \
+        monitor
 
 # Complete setup commands
 full-stack-with-monitoring: setup-keycloak
