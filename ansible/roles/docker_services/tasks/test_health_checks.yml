@@ -1,0 +1,29 @@
+---
+- name: Test health check endpoints
+  ansible.builtin.uri:
+    url: "{{ item.value.url }}"
+    method: GET
+    validate_certs: "{{ item.value.validate_certs | default(omit) }}"
+    status_code: "{{ item.value.status_code | default(200) }}
+    return_content: yes
+    timeout: 10
+  register: health_check_result
+  loop: "{{ health_checks | dict2items }}
+  loop_control:
+    label: "{{ item.key }}"
+  ignore_errors: yes
+  changed_when: false
+  tags: health_checks
+
+- name: Show health check results
+  ansible.builtin.debug:
+    msg: |
+      Service: {{ item.item.key }}
+      URL: {{ item.item.value.url }}
+      Status: {{ '✅ PASSED' if item.status == 200 else '❌ FAILED' }}
+      Response Code: {{ item.status | default('N/A') }}
+      Response: {{ item.content | default('N/A') | regex_replace('\n', '') | truncate(100) }}
+  loop: "{{ health_check_result.results }}
+  loop_control:
+    label: "{{ item.item.key }}"
+  tags: health_checks

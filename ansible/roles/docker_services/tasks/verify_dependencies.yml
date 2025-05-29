@@ -1,0 +1,17 @@
+---
+- name: Check dependencies for {{ service.name }}
+  ansible.builtin.assert:
+    that:
+      - dependency in running_services
+      - running_services[dependency].state == 'running'
+      - running_services[dependency].health is defined
+      - running_services[dependency].health is not match('unhealthy')
+    success_msg: "✅ {{ service.name }} dependency {{ dependency }} is running and healthy"
+    fail_msg: |
+      ❌ {{ service.name }} dependency {{ dependency }} is not running or healthy.
+      Status: {{ running_services[dependency] | default('Dependency not found') }}
+  loop: "{{ service.depends_on }}"
+  loop_control:
+    loop_var: dependency
+    label: "{{ dependency }}"
+  tags: services

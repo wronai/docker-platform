@@ -1,0 +1,25 @@
+---
+- name: Test service connectivity
+  ansible.builtin.shell: |
+    # Test basic TCP connectivity to service ports
+    for port in {{ service_ports | dict2items | map(attribute='value') | list | join(' ') }}; do
+      echo -n "Testing port $port... "
+      if nc -z -w 2 localhost $port; then
+        echo "✅ OPEN"
+      else
+        echo "❌ CLOSED"
+        exit 1
+      fi
+    done
+  args:
+    executable: /bin/bash
+  register: port_check
+  ignore_errors: yes
+  changed_when: false
+  tags: connectivity
+
+- name: Show port check results
+  ansible.builtin.debug:
+    msg: "{{ port_check.stdout_lines }}"
+  when: port_check is defined
+  tags: connectivity
