@@ -22,10 +22,11 @@ services:
       timeout: 10s
       retries: 5
 
-  # Keycloak Identity Provider
+  # Keycloak Identity Provider using Bitnami image for better stability
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0
+    image: bitnami/keycloak:26.2.5
     container_name: keycloak
+    command: ["/opt/bitnami/scripts/keycloak/run.sh"]
     environment:
       # Database
       KC_DB: postgres
