@@ -23,33 +23,132 @@ RESET  := $(shell tput -Txterm sgr0)
         deploy \
         monitor
 
-# Complete setup commands
-full-stack-with-monitoring: setup-keycloak
-	@echo "🚀 Starting complete Media Vault stack with monitoring..."
+## Help
+help: ## Show this help
+	@echo ''
+	@echo 'Usage:'
+	@echo '  ${YELLOW}make${RESET} ${GREEN}<target>${RESET}'
+	@echo ''
+	@echo 'Targets:'
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  ${YELLOW}%-20s${GREEN}%s${RESET}\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
+
+## Environment
+init: ## Initialize development environment
+	@echo "${GREEN}🚀 Initializing development environment...${RESET}"
+	cp .env.example .env
+	@echo "✅ Created .env file"
+	@echo "${YELLOW}ℹ️  Please edit .env with your configuration${RESET}
+
+## Docker Compose
+up: ## Start all services
+	@echo "${GREEN}🚀 Starting all services...${RESET}"
 	docker-compose up -d
-	docker-compose -f docker-compose.monitoring.yml up -d
-	@echo ""
-	@echo "🎉 Media Vault with monitoring is ready!"
-	@echo ""
-	@echo "📊 Service URLs:"
-	@echo "├── 🌐 Main App: http://localhost"
-	@echo "├── 📊 Grafana: http://localhost:3333 (admin/grafana123)"
-	@echo "├── 📈 Prometheus: http://localhost:9090"
-	@echo "├── 🔐 Keycloak: http://localhost:8443/admin (admin/admin123)"
-	@echo "├── ⚠️  AlertManager: http://localhost:9093"
-	@echo "└── 🐳 Portainer: http://localhost:9000"
-	@echo ""
-	@echo "👤 Test Accounts:"
-	@echo "├── Admin: vaultadmin / admin123"
-	@echo "└── User:  vaultuser / user123"
 
-infrastructure:
-	@echo "🏗️  Starting infrastructure stack..."
+up-build: ## Rebuild and start all services
+	@echo "${GREEN}🚀 Rebuilding and starting all services...${RESET}"
+	docker-compose up -d --build
+
+down: ## Stop all services
+	@echo "${YELLOW}🛑 Stopping all services...${RESET}"
+	docker-compose down
+
+restart: down up ## Restart all services
+
+logs: ## View logs from all services
+	docker-compose logs -f
+
+## Development
+dev: up ## Start development environment
+
+watch-backend: ## Watch backend for changes and rebuild
+	@echo "${GREEN}👀 Watching backend for changes...${RESET}"
+	docker-compose -f docker-compose.dev.yml up backend
+
+watch-frontend: ## Watch frontend for changes and rebuild
+	@echo "${GREEN}👀 Watching frontend for changes...${RESET}"
+	docker-compose -f docker-compose.dev.yml up frontend
+
+## Testing
+test: test-unit test-integration ## Run all tests
+
+test-unit: ## Run unit tests
+	@echo "${GREEN}🧪 Running unit tests...${RESET}"
+	docker-compose run --rm backend go test -v ./... -short
+
+test-integration: ## Run integration tests
+	@echo "${GREEN}🧪 Running integration tests...${RESET}"
+	docker-compose -f docker-compose.test.yml up --abort-on-container-exit
+
+test-e2e: ## Run end-to-end tests
+	@echo "${GREEN}🧪 Running E2E tests...${RESET}"
+	# TODO: Add E2E test command
+
+coverage: ## Generate test coverage report
+	@echo "${GREEN}📊 Generating test coverage...${RESET}"
+	docker-compose run --rm backend go test -coverprofile=coverage.out ./...
+	docker-compose run --rm backend go tool cover -html=coverage.out -o coverage.html
+
+## Code Quality
+lint: ## Run linters
+	@echo "${GREEN}🔍 Running linters...${RESET}"
+	docker-compose run --rm backend golangci-lint run
+
+format: ## Format code
+	@echo "${GREEN}🎨 Formatting code...${RESET}"
+	docker-compose run --rm backend gofmt -w .
+
+## Monitoring
+monitor: ## Open monitoring dashboard
+	@echo "${GREEN}📊 Opening monitoring dashboard...${RESET}"
+	@echo "${YELLOW}Grafana: http://localhost:3000${RESET} (admin/grafana)"
+	@echo "${YELLOW}Prometheus: http://localhost:9090${RESET}"
+
+## Keycloak
+setup-keycloak: ## Set up Keycloak with initial configuration
+	@echo "${GREEN}🔐 Setting up Keycloak...${RESET}"
+	./keycloak/setup-keycloak.sh
+
+## Deployment
+deploy: ## Deploy to production
+	@echo "${GREEN}🚀 Deploying to production...${RESET}"
+	docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+## Cleanup
+clean: ## Remove all containers and volumes
+	@echo "${YELLOW}🧹 Cleaning up...${RESET}"
+	docker-compose down -v
+
+dev-clean: clean ## Clean development environment
+	@echo "${YELLOW}🧹 Cleaning development environment...${RESET}
+	rm -rf node_modules
+
+dist-clean: clean ## Remove all build artifacts and dependencies
+	@echo "${YELLOW}🧹 Deep cleaning...${RESET}
+	docker system prune -a --volumes
+
+## Documentation
+docs: ## Generate documentation
+	@echo "${GREEN}📚 Generating documentation...${RESET}"
+	# TODO: Add documentation generation command
+
+## Complete Setup
+full-stack: setup-keycloak up monitor ## Start complete stack with monitoring
+	@echo "${GREEN}🎉 Media Vault is ready!${RESET}"
+	@echo ""
+	@echo "${YELLOW}📊 Service URLs:${RESET}"
+	@echo "  🌐 Main App: http://localhost"
+	@echo "  📊 Grafana: http://localhost:3000 (admin/grafana)"
+	@echo "  📈 Prometheus: http://localhost:9090"
+	@echo "  🔐 Keycloak: http://localhost:8080/admin (admin/admin123)"
+	@echo "  ⚠️  AlertManager: http://localhost:9093"
+
+## Infrastructure
+infrastructure: ## Start infrastructure services
+	@echo "${GREEN}🏗️  Starting infrastructure stack...${RESET}"
 	docker-compose -f docker-compose.infrastructure.yml up -d
-	@echo "✅ Infrastructure started"
 
-monitoring:
-	@echo "📊 Starting monitoring stack..."
+monitoring: ## Start monitoring stack
+	@echo "${GREEN}📊 Starting monitoring stack...${RESET}"
 	docker-compose -f docker-compose.monitoring.yml up -d
 	@echo "✅ Monitoring started"
 	@echo "📊 Grafana: http://localhost:3333"
