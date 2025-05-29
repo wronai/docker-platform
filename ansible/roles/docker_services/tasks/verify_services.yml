@@ -1,0 +1,15 @@
+---
+- name: Check if expected services are running
+  ansible.builtin.include_tasks: verify_service.yml
+  loop: "{{ expected_services }}"
+  loop_control:
+    loop_var: service
+  tags: services
+
+- name: Verify service dependencies
+  ansible.builtin.include_tasks: verify_dependencies.yml
+  loop: "{{ expected_services }}"
+  loop_control:
+    loop_var: service
+  when: service.depends_on | default([]) | length > 0
+  tags: services
