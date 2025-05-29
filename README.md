@@ -86,22 +86,22 @@ open http://localhost
 
 ```mermaid
 graph TB
-    User[👤 Users] --> Caddy[🔶 Caddy Proxy]
-    Caddy --> Flutter[🎨 Flutter Web App]
-    Caddy --> API[⚡ Media Vault API]
-    Caddy --> Admin[⚙️ Admin Panel]
-    Caddy --> Keycloak[🔐 Keycloak]
+    User[Users] --> Caddy[Caddy Proxy]
+    Caddy --> Flutter[Flutter Web App]
+    Caddy --> API[Media Vault API]
+    Caddy --> Admin[Admin Panel]
+    Caddy --> Keycloak[Keycloak]
     
-    API --> SQLite[(📄 SQLite)]
-    API --> Storage[💾 File Storage]
-    API --> Analyzer[🔍 AI Analyzer]
-    API --> NSFW[🤖 NSFW Detector]
+    API --> SQLite[(SQLite)]
+    API --> Storage[File Storage]
+    API --> Analyzer[AI Analyzer]
+    API --> NSFW[NSFW Detector]
     
-    subgraph "📊 Monitoring Stack"
-        Prometheus[📈 Prometheus]
-        Grafana[📊 Grafana]
-        AlertManager[🚨 AlertManager]
-        Loki[📝 Loki Logs]
+    subgraph "Monitoring Stack"
+        Prometheus[Prometheus]
+        Grafana[Grafana]
+        AlertManager[AlertManager]
+        Loki[Loki Logs]
     end
     
     API --> Prometheus
@@ -109,7 +109,6 @@ graph TB
     AlertManager --> Prometheus
 ```
 
----
 
 ## 🔧 **Configuration**
 
