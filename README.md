@@ -91,15 +91,15 @@ sequenceDiagram
 
 ```mermaid
 graph TD
-    A[User] -->|1. Select files| B[Frontend]
-    B -->|2. Request upload URL| C[Backend]
-    C -->|3. Generate signed URL| B
-    B -->|4. Upload file| D[Storage]
-    B -->|5. Confirm upload| C
-    C -->|6. Process media| E[Analyzer]
-    E -->|7. Store metadata| F[Database]
-    C -->|8. Update UI| B
-    B -->|9. Show success| A
+    A[User] -->|1 Select files| B[Frontend]
+    B -->|2 Request upload URL| C[Backend]
+    C -->|3 Generate signed URL| B
+    B -->|4 Upload file| D[Storage]
+    B -->|5 Confirm upload| C
+    C -->|6 Process media| E[Analyzer]
+    E -->|7 Store metadata| F[Database]
+    C -->|8 Update UI| B
+    B -->|9 Show success| A
 ```
 
 ### System Monitoring Flow
