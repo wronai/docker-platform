@@ -2,7 +2,165 @@
 
 ## 🌐 System Architecture
 
-This document provides a comprehensive overview of the Media Vault system architecture, including its components, data flow, and design decisions.
+This document provides a comprehensive overview of the Media Vault system architecture, including its components, data flow, user roles, and design decisions.
+
+## 👥 User Roles
+
+### 1. End User
+- **Permissions**:
+  - Upload and manage personal media
+  - View and edit own media metadata
+  - Share media with other users
+  - Generate AI descriptions for media
+  - View personal analytics
+
+### 2. Partner User
+- **Permissions**:
+  - All End User permissions
+  - Access to partner-specific media
+  - Manage media shared with partner organization
+  - View partner-level analytics
+
+### 3. Administrator
+- **Permissions**:
+  - All Partner User permissions
+  - Manage system users and roles
+  - Configure system settings
+  - Access system-wide analytics
+  - Perform system maintenance
+
+## 🔄 Key User Flows
+
+### 1. Media Upload Flow
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant A as API
+    participant S as Storage
+    participant D as Database
+    participant K as Keycloak
+    
+    U->>F: Select files to upload
+    F->>K: Request auth token
+    K-->>F: Return JWT
+    F->>A: Upload files (with JWT)
+    A->>K: Validate token
+    A->>S: Store files
+    A->>D: Save metadata
+    A-->>F: Return success/error
+    F-->>U: Show upload status
+```
+
+### 2. Media Sharing Flow
+```mermaid
+sequenceDiagram
+    participant U as Owner
+    participant F as Frontend
+    participant A as API
+    participant D as Database
+    participant R as Recipient
+    
+    U->>F: Select media to share
+    F->>A: Request share (with permissions)
+    A->>D: Create share record
+    A-->>F: Share link/notification
+    F-->>U: Confirm share
+    A->>R: Send notification (email/in-app)
+    R->>F: Access shared media
+    F->>A: Validate access
+    A-->>F: Return media
+    F-->>R: Display shared media
+```
+
+## 🏗 System Components
+
+### 1. Frontend (Flutter Web)
+- Responsive web interface
+- Media upload and management
+- Real-time updates
+- Authentication flows
+
+### 2. Backend Services
+- **API Gateway**: Request routing and authentication
+- **Media Service**: File processing and storage
+- **Metadata Service**: Media metadata management
+- **AI Service**: Media analysis and description
+- **Sharing Service**: Access control and sharing
+
+### 3. Data Storage
+- **PostgreSQL**: Relational data
+- **Object Storage**: Media files
+- **Redis**: Caching and sessions
+
+### 4. Infrastructure
+- **Docker & Docker Compose**: Containerization
+- **Caddy**: Reverse proxy
+- **Keycloak**: Authentication/Authorization
+- **Monitoring Stack**: Prometheus, Grafana, Loki
+
+## 🚀 Deployment Architecture
+
+### Development Environment
+- Local Docker Compose setup
+- Hot-reload for development
+- Local database instances
+
+### Production Environment
+- Container orchestration (Kubernetes)
+- High availability
+- Automated backups
+- Monitoring and alerting
+
+## 🔄 Data Flow
+
+1. **Authentication**: User authenticates via Keycloak
+2. **Request Processing**: Caddy routes requests to appropriate service
+3. **Business Logic**: Backend services process requests
+4. **Data Persistence**: Data is stored in appropriate storage
+5. **Response**: Results are returned to the frontend
+
+## 🛡️ Security Considerations
+
+- All communications use HTTPS
+- JWT-based authentication
+- Role-based access control (RBAC)
+- Input validation and sanitization
+- Regular security audits
+
+## 📈 Scaling Strategy
+
+- Horizontal scaling for stateless services
+- Database read replicas
+- CDN for media delivery
+- Caching layer for frequent queries
+
+## 🔄 CI/CD Pipeline
+
+1. Code commit triggers build
+2. Run tests
+3. Build Docker images
+4. Deploy to staging
+5. Run integration tests
+6. Deploy to production
+
+## 📋 Compliance
+
+- GDPR compliance for user data
+- Data retention policies
+- Audit logging
+- Regular backups
+
+## 🔄 Error Handling
+
+- Centralized error logging
+- Graceful degradation
+- User-friendly error messages
+- Automatic retries for transient failures
+
+## 📚 API Documentation
+
+See [API Documentation](./API.md) for detailed API specifications and examples.
 
 ### High-Level Architecture
 

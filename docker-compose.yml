@@ -46,17 +46,14 @@ services:
       KEYCLOAK_ENABLE_HTTPS: "false"  # Disable HTTPS as we're behind a reverse proxy
       KEYCLOAK_ENABLE_STATISTICS: true
       KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: true
-      KEYCLOAK_CACHE: local
       
-      # Disable clustering in development
-      KC_CACHE: local
-      KC_CACHE_STACK: local
-      KC_CACHE_CONFIG_FILE: local
+      # Cache and clustering configuration
+      KEYCLOAK_CACHE: local
+      KEYCLOAK_CACHE_STACK: local
       
       # Host configuration
       KEYCLOAK_HOSTNAME: ${KC_HOSTNAME:-localhost}
       KC_HOSTNAME_STRICT: "false"
-      KEYCLOAK_HOSTNAME_STRICT: false
       KEYCLOAK_HOSTNAME_STRICT_HTTPS: false
       
       # JVM settings
@@ -64,10 +61,6 @@ services:
       
       # Logging
       KEYCLOAK_LOG_LEVEL: "INFO"
-      
-      # Cache configuration
-      KEYCLOAK_CACHE: "local"
-      KEYCLOAK_CACHE_STACK: "kubernetes"
       
       # Development settings
       KEYCLOAK_DEVELOPMENT: "true"
