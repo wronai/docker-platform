@@ -2,7 +2,7 @@
 - name: Test service connectivity
   ansible.builtin.shell: |
     # Test basic TCP connectivity to service ports
-    for port in {{ service_ports | dict2items | map(attribute='value') | list | join(' ') }}; do
+    for port in {% raw %}{{ service_ports | dict2items | map(attribute='value') | list | join(' ') }}{% endraw %}; do
       echo -n "Testing port $port... "
       if nc -z -w 2 localhost $port; then
         echo "✅ OPEN"

@@ -9,7 +9,7 @@
 
 - name: Set fact for running services
   ansible.builtin.set_fact:
-    running_services: "{{ docker_compose_info.services | default([]) }}"
+    running_services: "{% raw %}{{ docker_compose_info.services | default([]) }}{% endraw %}"
   tags: docker_compose
 
 - name: Debug running services
