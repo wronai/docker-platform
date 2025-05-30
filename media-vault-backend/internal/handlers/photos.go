@@ -175,20 +175,36 @@ func (h *PhotoHandler) GetThumbnail(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get user ID from context
-	userID := c.Locals("userID").(string)
+	// First get the photo to verify ownership
+	photo, err := h.photoService.GetPhoto(c.Context(), photoID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Photo not found: " + err.Error(),
+		})
+	}
 
-	// Get the thumbnail data
-	thumbnail, err := h.photoService.GetThumbnail(c.Context(), userID, photoID)
+	// Verify ownership
+	userID := c.Locals("userID").(string)
+	if photo.UserID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "You don't have permission to view this thumbnail",
+		})
+	}
+
+	// Get size parameter (optional, default to medium)
+	size := c.Query("size", "medium")
+
+	// Get thumbnail data
+	data, contentType, err := h.photoService.GetThumbnail(c.Context(), photoID, size)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to get thumbnail: " + err.Error(),
 		})
 	}
 
-	// Set appropriate content type
-	c.Set("Content-Type", "image/jpeg") // or determine from thumbnail data
-	return c.Send(thumbnail)
+	// Set content type and send the image data
+	c.Set("Content-Type", contentType)
+	return c.Send(data)
 }
 
 // UpdateDescription updates a photo's description
@@ -200,33 +216,46 @@ func (h *PhotoHandler) UpdateDescription(c *fiber.Ctx) error {
 		})
 	}
 
+	// First get the photo to verify ownership
+	photo, err := h.photoService.GetPhoto(c.Context(), photoID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Photo not found: " + err.Error(),
+		})
+	}
+
+	// Verify ownership
+	userID := c.Locals("userID").(string)
+	if photo.UserID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "You don't have permission to update this photo's description",
+		})
+	}
+
 	// Parse request body
 	var request struct {
 		Description string `json:"description"`
 	}
-
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body: " + err.Error(),
 		})
 	}
 
-	// Get user ID from context
-	userID := c.Locals("userID").(string)
-
-	// Update the photo description
-	updateData := map[string]interface{}{
+	// Update the description
+	updates := map[string]interface{}{
 		"description": request.Description,
 	}
 
-	photo, err := h.photoService.UpdatePhoto(c.Context(), userID, photoID, updateData)
+	// Update the photo
+	updatedPhoto, err := h.photoService.UpdatePhoto(c.Context(), photoID, updates)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update description: " + err.Error(),
 		})
 	}
 
-	return c.JSON(photo)
+	return c.JSON(updatedPhoto)
 }
 
 // GenerateDescription generates an AI description for a photo
@@ -238,15 +267,41 @@ func (h *PhotoHandler) GenerateDescription(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get user ID from context
+	// First get the photo to verify ownership
+	photo, err := h.photoService.GetPhoto(c.Context(), photoID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Photo not found: " + err.Error(),
+		})
+	}
+
+	// Verify ownership
 	userID := c.Locals("userID").(string)
+	if photo.UserID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "You don't have permission to generate a description for this photo",
+		})
+	}
 
 	// Generate the description
-	description, err := h.photoService.GenerateDescription(c.Context(), userID, photoID)
+	description, err := h.photoService.GenerateDescription(c.Context(), photoID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to generate description: " + err.Error(),
 		})
+	}
+
+	// Update the photo with the generated description
+	updates := map[string]interface{}{
+		"description": description,
+	}
+
+	_, err = h.photoService.UpdatePhoto(c.Context(), photoID, updates)
+	if err != nil {
+		// Log the error but don't fail the request
+		// since we still want to return the generated description
+		// Consider using a background job for this in production
+		// log.Printf("Failed to update photo with generated description: %v", err)
 	}
 
 	return c.JSON(fiber.Map{
@@ -263,32 +318,65 @@ func (h *PhotoHandler) GetSharedWith(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get user ID from context
+	// First get the photo to verify ownership
+	photo, err := h.photoService.GetPhoto(c.Context(), photoID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Photo not found: " + err.Error(),
+		})
+	}
+
+	// Verify ownership
 	userID := c.Locals("userID").(string)
+	if photo.UserID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "You don't have permission to view sharing information for this photo",
+		})
+	}
 
 	// Get the list of users the photo is shared with
-	sharedWith, err := h.photoService.GetSharedWith(c.Context(), userID, photoID)
+	users, err := h.photoService.GetSharedWith(c.Context(), photoID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to get shared with list: " + err.Error(),
+			"error": "Failed to get shared users: " + err.Error(),
 		})
 	}
 
 	return c.JSON(fiber.Map{
-		"shared_with": sharedWith,
+		"photo_id":   photoID,
+		"shared_with": users,
 	})
 }
 
 // RegisterRoutes registers photo-related routes
 func (h *PhotoHandler) RegisterRoutes(router fiber.Router) {
-	photos := router.Group("/photos")
-	photos.Post("/", h.UploadPhoto)
-	photos.Get("/", h.ListPhotos)
-	photos.Get("/:id", h.GetPhoto)
-	photos.Put("/:id", h.UpdatePhoto)
-	photos.Delete("/:id", h.DeletePhoto)
-	photos.Get("/:id/thumbnail", h.GetThumbnail)
-	photos.Put("/:id/description", h.UpdateDescription)
-	photos.Post("/:id/generate-description", h.GenerateDescription)
-	photos.Get("/:id/shared-with", h.GetSharedWith)
+	photoGroup := router.Group("/photos")
+	{
+		// Upload a new photo
+		photoGroup.Post("/", h.UploadPhoto)
+		
+		// List all photos with pagination
+		photoGroup.Get("/", h.ListPhotos)
+		
+		// Get a specific photo by ID
+		photoGroup.Get("/:id", h.GetPhoto)
+		
+		// Update a photo's metadata
+		photoGroup.Put("/:id", h.UpdatePhoto)
+		
+		// Delete a photo
+		photoGroup.Delete("/:id", h.DeletePhoto)
+		
+		// Get a photo's thumbnail
+		photoGroup.Get("/:id/thumbnail", h.GetThumbnail)
+		
+		// Update a photo's description
+		photoGroup.Put("/:id/description", h.UpdateDescription)
+		
+		// Generate an AI description for a photo
+		photoGroup.Post("/:id/generate-description", h.GenerateDescription)
+		
+		// Get the list of users a photo is shared with
+		photoGroup.Get("/:id/shared-with", h.GetSharedWith)
+	}
 }

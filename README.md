@@ -2,6 +2,65 @@
 
 **Enterprise-grade secure media storage with AI analysis, role-based access, and comprehensive monitoring.**
 
+
+## 🙏 Acknowledgments
+
+- [Docker](https://www.docker.com/)
+- [Keycloak](https://www.keycloak.org/)
+- [Prometheus](https://prometheus.io/)
+- [Grafana](https://grafana.com/)
+- [Flutter](https://flutter.dev/)
+
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/wronai/docker-platform)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
+[![Documentation](https://img.shields.io/badge/docs-📘-blueviolet)](docs/README.md)
+[![Project Status](https://img.shields.io/badge/status-active%20development-yellowgreen)](#project-status)
+[![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+## 📋 Table of Contents
+- [🚀 Quick Start](#-quick-start)
+  - [Prerequisites](#-prerequisites)
+  - [Deployment](#-deployment)
+  - [Accessing Services](#-accessing-services)
+- [✨ Key Features](#-key-features)
+- [🔑 Key Files](#-key-files)
+- [🏗️ Architecture Overview](#-architecture-overview)
+- [🛠️ Configuration Files](#-configuration-files)
+  - [Docker Compose Files](#docker-compose-files)
+  - [Environment Configuration](#environment-configuration)
+- [📂 Project Structure](#-project-structure)
+- [🔄 Development Workflow](#-development-workflow)
+- [🧪 Testing](#-testing)
+  - [Run Tests](#run-tests)
+- [📚 Documentation](#-documentation)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [🙏 Acknowledgments](#-acknowledgments)
+
+## 🚀 Quick Start
+
+1. **Prerequisites**:
+   - Docker 20.10+ and Docker Compose
+   - 4GB RAM minimum (8GB recommended)
+   - Ports 80, 443, 8080, 3000 available
+
+2. **Deploy the stack**:
+   ```bash
+   git clone https://github.com/wronai/docker-platform.git
+   cd docker-platform
+   cp .env.example .env
+   make up
+   ```
+
+3. **Access the applications**:
+   - Web UI: https://localhost
+   - Admin Panel: https://admin.localhost
+   - Keycloak: https://auth.localhost
+   - Grafana: http://localhost:3000
+
+For detailed setup and configuration, see the [Deployment Guide](docs/DEPLOYMENT.md).
+
 ## 🌟 Key Features
 
 - **Secure File Storage**: End-to-end encrypted media storage
@@ -138,72 +197,6 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 ## 📄 License
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Docker](https://www.docker.com/)
-- [Keycloak](https://www.keycloak.org/)
-- [Prometheus](https://prometheus.io/)
-- [Grafana](https://grafana.com/)
-- [Flutter](https://flutter.dev/)
-
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/wronai/docker-platform)
-[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
-[![Documentation](https://img.shields.io/badge/docs-📘-blueviolet)](docs/README.md)
-[![Project Status](https://img.shields.io/badge/status-active%20development-yellowgreen)](#project-status)
-[![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
-
-## 📋 Table of Contents
-- [🚀 Quick Start](#-quick-start)
-  - [Prerequisites](#-prerequisites)
-  - [Deployment](#-deployment)
-  - [Accessing Services](#-accessing-services)
-- [✨ Key Features](#-key-features)
-- [🔑 Key Files](#-key-files)
-- [🏗️ Architecture Overview](#-architecture-overview)
-- [🛠️ Configuration Files](#-configuration-files)
-  - [Docker Compose Files](#docker-compose-files)
-  - [Environment Configuration](#environment-configuration)
-- [📂 Project Structure](#-project-structure)
-- [🔄 Development Workflow](#-development-workflow)
-- [🧪 Testing](#-testing)
-  - [Run Tests](#run-tests)
-- [📚 Documentation](#-documentation)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [🙏 Acknowledgments](#-acknowledgments)
-
-## 🚀 Quick Start
-
-1. **Prerequisites**:
-   - Docker 20.10+ and Docker Compose
-   - 4GB RAM minimum (8GB recommended)
-   - Ports 80, 443, 8080, 3000 available
-
-2. **Deploy the stack**:
-   ```bash
-   git clone https://github.com/wronai/docker-platform.git
-   cd docker-platform
-   cp .env.example .env
-   make up
-   ```
-
-3. **Access the applications**:
-   - Web UI: https://localhost
-   - Admin Panel: https://admin.localhost
-   - Keycloak: https://auth.localhost
-   - Grafana: http://localhost:3000
-
-For detailed setup and configuration, see the [Deployment Guide](docs/DEPLOYMENT.md).
-
-## ✨ Key Features
-
-- **Secure File Storage**: End-to-end encryption for all media
-- **Role-Based Access**: Fine-grained permission controls
-- **AI Analysis**: Automatic content moderation and tagging
-- **High Availability**: Designed for 99.9% uptime
-- **Comprehensive Monitoring**: Built-in observability stack
 
 ## 🔑 Key Files
 
