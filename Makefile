@@ -60,6 +60,16 @@ logs: ## View logs from all services
 ## Development
 dev: up ## Start development environment
 
+run-browse: up ## Start services and open in browser
+	@echo "${GREEN}🌐 Opening application in browser...${RESET}
+	@if command -v xdg-open > /dev/null; then \
+		xdg-open http://localhost; \
+	elif command -v open > /dev/null; then \
+		open http://localhost; \
+	else \
+		echo "${YELLOW}Could not detect the web browser to use. Please open http://localhost manually${RESET}"; \
+	fi
+
 watch-backend: ## Watch backend for changes and rebuild
 	@echo "${GREEN}👀 Watching backend for changes...${RESET}"
 	docker-compose -f docker-compose.dev.yml up media-vault-api
