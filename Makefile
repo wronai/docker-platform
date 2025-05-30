@@ -85,7 +85,7 @@ init: ## Initialize development environment
 	@echo "✅ Created .env file"
 	@echo "${YELLOW}ℹ️  Please edit .env with your configuration${RESET}"
 
-## Docker Compose
+## Docker Composee
 up: ## Start all services
 	@echo "${GREEN}🚀 Starting all services...${RESET}"
 	docker-compose up -d
@@ -94,9 +94,13 @@ up-build: ## Rebuild and start all services
 	@echo "${GREEN}🚀 Rebuilding and starting all services...${RESET}"
 	docker-compose up -d --build
 
-down: ## Stop all services
-	@echo "${YELLOW}🛑 Stopping all services...${RESET}"
+down: ## Stop and remove all services
+	@echo "${YELLOW}🛑 Stopping and removing all services...${RESET}"
 	docker-compose down
+
+stop: ## Stop all services without removing containers
+	@echo "${YELLOW}🛑 Stopping all services (containers will remain)...${RESET}"
+	docker-compose stop
 
 restart: ## Restart all services
 	@echo "${YELLOW}🔄 Restarting all services...${RESET}"
