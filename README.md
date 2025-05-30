@@ -8,6 +8,9 @@
 [![Documentation](https://img.shields.io/badge/docs-📘-blueviolet)](docs/README.md)
 [![Project Status](https://img.shields.io/badge/status-active%20development-yellowgreen)](#project-status)
 [![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wronai/media-vault-backend)](https://goreportcard.com/report/github.com/wronai/media-vault-backend)
+[![GitHub Issues](https://img.shields.io/github/issues/wronai/docker-platform)](https://github.com/wronai/docker-platform/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/wronai/docker-platform)](https://github.com/wronai/docker-platform/pulls)
 
 ## 🚀 Quick Start
 
@@ -16,29 +19,51 @@
 - 4GB RAM minimum (8GB recommended)
 - Ports 80, 443, 8080, 3000 available
 
-### Deployment
-```bash
-git clone https://github.com/wronai/docker-platform.git
-cd docker-platform
-cp .env.example .env
-make up
-```
+### Local Development Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/wronai/docker-platform.git
+   cd docker-platform
+   ```
+
+2. Copy the example environment file and update as needed:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Start the services:
+   ```bash
+   make up
+   ```
 
 ### Accessing Services
-- Web UI: https://localhost
-- Admin Panel: https://admin.localhost
-- Keycloak: https://auth.localhost
-- Grafana: http://localhost:3000
+- **Web UI**: https://localhost
+- **Admin Panel**: https://admin.localhost
+- **Keycloak**: https://auth.localhost
+- **Grafana**: http://localhost:3000
+- **API Documentation**: http://localhost:8080/api/docs
 
 ## ✨ Key Features
 
-- **Secure File Storage**: End-to-end encrypted media storage
-- **AI-Powered Analysis**: Automatic media tagging and description
-- **Role-Based Access Control**: Fine-grained permissions system
-- **Real-time Collaboration**: Share and collaborate on media assets
-- **Comprehensive Monitoring**: Built-in observability and analytics
-- **Scalable Architecture**: Containerized microservices
-- **Self-Hosted**: Full control over your data
+### Core Features
+- **Secure File Storage**: End-to-end encrypted media storage with AES-256 encryption
+- **AI-Powered Analysis**: Automatic media tagging, face recognition, and content description
+- **Role-Based Access Control**: Fine-grained permissions with support for custom roles
+- **Real-time Collaboration**: Share and collaborate on media assets in real-time
+- **Version Control**: Track changes and revert to previous versions of media files
+
+### Technical Highlights
+- **Containerized Architecture**: Docker-based microservices for easy deployment
+- **High Availability**: Built with scalability and fault tolerance in mind
+- **Comprehensive API**: RESTful API with OpenAPI 3.0 documentation
+- **Event-Driven**: Built on event sourcing for reliable operations
+- **Multi-tenant**: Support for multiple organizations with data isolation
+
+### Monitoring & Analytics
+- **Real-time Metrics**: Monitor system health and performance
+- **Audit Logs**: Detailed logs of all system activities
+- **Usage Analytics**: Track storage usage and user activity
+- **Alerting**: Configure alerts for important system events
 
 ## 🏗️ Architecture Overview
 

@@ -1,6 +1,35 @@
-# 📡 API Documentation
+# 📡 Media Vault API Documentation
 
-This document provides comprehensive documentation for the Media Vault API, including endpoints, request/response formats, and authentication details.
+This document provides comprehensive documentation for the Media Vault REST API, including endpoints, request/response formats, authentication, and usage examples.
+
+## 🔄 API Version
+Current version: `v1`
+
+## 🛠️ Getting Started
+
+### Base URL
+All API endpoints are relative to the base URL:
+```
+https://api.yourdomain.com/v1
+```
+
+For local development:
+```
+http://localhost:8080/api/v1
+```
+
+### Authentication
+All API requests require authentication using JWT (JSON Web Tokens). Include the token in the `Authorization` header:
+
+```http
+Authorization: Bearer your-jwt-token
+```
+
+### Request Headers
+Include these headers with all requests:
+- `Content-Type: application/json`
+- `Accept: application/json`
+- `Authorization: Bearer <token>`
 
 ## Table of Contents
 - [Authentication](#-authentication)
