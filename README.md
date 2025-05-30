@@ -40,6 +40,16 @@ make up
 - **Scalable Architecture**: Containerized microservices
 - **Self-Hosted**: Full control over your data
 
+## 🏗️ Architecture Overview
+
+Media Vault is built on a modern microservices architecture:
+
+- **Frontend**: Flutter-based responsive web interface
+- **Backend**: High-performance Go services
+- **Authentication**: Keycloak for identity management
+- **Database**: PostgreSQL for data persistence
+- **Monitoring**: Prometheus, Grafana, and more
+
 ## 👥 User Roles
 
 ### End User
@@ -65,18 +75,10 @@ make up
 ```
 docker-platform/
 ├── ansible/               # Infrastructure as Code
-│   └── README.md
 ├── caddy/                 # Reverse proxy configuration
 ├── data/                  # Persistent data
 ├── deployment/            # Deployment configurations
 ├── docs/                  # Documentation
-│   ├── API.md
-│   ├── ARCHITECTURE.md
-│   ├── DEPLOYMENT.md
-│   ├── MONITORING.md
-│   ├── README.md
-│   ├── SECURITY.md
-│   └── USER_GUIDE.md
 ├── keycloak/             # Authentication service
 │   ├── themes/           # Custom UI themes
 │   └── import/           # Initial data import
@@ -97,37 +99,47 @@ cp .env.example .env
 - `docker-compose.infrastructure.yml` - Infrastructure services
 - `docker-compose.automation.yml` - Automation tools
 
-## 🚧 Development
+## 🔧 Development
 
 ### Prerequisites
 - Go 1.21+
 - Node.js 18+
 - Flutter 3.10+
+- Docker & Docker Compose
 
-### Setup
-```bash
-make install-deps
-make build
-make up
-```
+### Development Workflow
 
-### Testing
-```bash
-make test
-make test-e2e
-```
+1. **Start the development environment**
+   ```bash
+   make dev-up
+   ```
+
+2. **Run tests**
+   ```bash
+   make test              # Unit tests
+   make test-integration  # Integration tests
+   make test-e2e          # End-to-end tests
+   ```
+
+3. **View logs**
+   ```bash
+   make logs
+   ```
 
 ## 📚 Documentation
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [API Reference](docs/API.md)
-- [Deployment Guide](docs/DEPLOYMENT.md)
-- [Security](docs/SECURITY.md)
-- [User Guide](docs/USER_GUIDE.md)
+Comprehensive documentation is available in the `docs/` directory:
+
+- [📘 User Guide](docs/USER_GUIDE.md) - End-user documentation
+- [🔧 Deployment Guide](docs/DEPLOYMENT.md) - Setup and configuration
+- [🏗️ Architecture](docs/ARCHITECTURE.md) - System design and components
+- [🔐 Security](docs/SECURITY.md) - Security best practices
+- [📊 Monitoring](docs/MONITORING.md) - Observability and alerting
+- [📝 API Reference](docs/API.md) - API documentation
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on how to contribute to this project.
 
 ## 📄 License
 
