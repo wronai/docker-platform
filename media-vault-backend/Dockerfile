@@ -7,9 +7,6 @@ WORKDIR /app
 # Copy go mod and sum files
 COPY go.mod go.sum ./
 
-# Initialize the Go module if not already done
-RUN go mod init media-vault 2>/dev/null || true
-
 # Download all dependencies
 RUN go mod download
 

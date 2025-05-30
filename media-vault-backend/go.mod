@@ -1,4 +1,4 @@
-module media-vault
+module github.com/wronai/media-vault-backend-backend
 
 go 1.21
 

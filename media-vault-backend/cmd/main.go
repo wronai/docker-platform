@@ -11,10 +11,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
-	"media-vault/internal/auth"
-	"media-vault/internal/database"
-	"media-vault/internal/handlers"
-	"media-vault/internal/services"
+	"media-vault-backend/internal/auth"
+	"media-vault-backend/internal/database"
+	"media-vault-backend/internal/handlers"
+	"media-vault-backend/internal/services"
+	"media-vault-backend/internal/models"
 )
 
 func main() {

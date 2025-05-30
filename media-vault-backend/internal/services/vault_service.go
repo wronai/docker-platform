@@ -5,7 +5,7 @@ import (
 	"errors"
 	"mime/multipart"
 
-	"media-vault/internal/models"
+	"media-vault-backend/internal/models"
 )
 
 type VaultService struct {
