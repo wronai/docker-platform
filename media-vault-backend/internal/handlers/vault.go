@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"media-vault-backend/internal/models"
-	"media-vault-backend/internal/services"
+	"github.com/wronai/media-vault-backend/internal/models"
+	"github.com/wronai/media-vault-backend/internal/services"
 )
 
 type VaultHandler struct {

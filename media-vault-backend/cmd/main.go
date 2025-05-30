@@ -1,4 +1,4 @@
-// media-vault-backend/cmd/main.go
+// github.com/wronai/media-vault-backend/cmd/main.go
 package main
 
 import (
@@ -11,11 +11,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
-	"media-vault-backend/internal/auth"
-	"media-vault-backend/internal/database"
-	"media-vault-backend/internal/handlers"
-	"media-vault-backend/internal/services"
-	"media-vault-backend/internal/models"
+	"github.com/wronai/media-vault-backend/internal/auth"
+	"github.com/wronai/media-vault-backend/internal/database"
+	"github.com/wronai/media-vault-backend/internal/handlers"
+	"github.com/wronai/media-vault-backend/internal/services"
+	"github.com/wronai/media-vault-backend/internal/models"
 )
 
 func main() {
@@ -164,7 +164,7 @@ func main() {
 
 ---
 
-// media-vault-backend/internal/models/photo.go
+// github.com/wronai/media-vault-backend/internal/models/photo.go
 package models
 
 import (
@@ -273,7 +273,7 @@ type ShareRequest struct {
 
 ---
 
-// media-vault-backend/internal/handlers/partner.go
+// github.com/wronai/media-vault-backend/internal/handlers/partner.go
 package handlers
 
 import (
@@ -596,7 +596,7 @@ func (h *PartnerHandler) GetPartnerAnalytics(c *fiber.Ctx) error {
 
 ---
 
-// media-vault-backend/internal/services/photo_service.go
+// github.com/wronai/media-vault-backend/internal/services/photo_service.go
 package services
 
 import (
