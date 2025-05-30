@@ -37,7 +37,7 @@ init: ## Initialize development environment
 	@echo "${GREEN}🚀 Initializing development environment...${RESET}"
 	cp .env.example .env
 	@echo "✅ Created .env file"
-	@echo "${YELLOW}ℹ️  Please edit .env with your configuration${RESET}
+	@echo "${YELLOW}ℹ️  Please edit .env with your configuration${RESET}"
 
 ## Docker Compose
 up: ## Start all services
@@ -66,7 +66,7 @@ watch-backend: ## Watch backend for changes and rebuild
 
 watch-frontend: ## Watch frontend for changes and rebuild
 	@echo "${GREEN}👀 Watching frontend for changes...${RESET}"
-	docker-compose -f docker-compose.dev.yml up frontend
+	docker-compose -f docker-compose.dev.yml up flutter-web
 
 ## Testing
 test: test-unit test-integration ## Run all tests

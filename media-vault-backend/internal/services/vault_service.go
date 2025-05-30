@@ -1,11 +1,7 @@
 package services
 
 import (
-	"context"
-	"errors"
-	"mime/multipart"
-
-	"github.com/wronai/media-vault-backend/internal/models"
+	"database/sql"
 )
 
 type VaultService struct {
