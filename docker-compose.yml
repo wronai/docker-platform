@@ -49,10 +49,14 @@ services:
       
       # Cache and clustering configuration
       KEYCLOAK_CACHE: local
+      KC_CACHE: local
+      KC_CACHE_STACK: tcp
       KC_HEALTH_ENABLED: "true"
-      KC_METRICS_ENABLED: "true"
+      KC_METRICS_ENABLED: "false"
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_FEATURES: account-api,account2,admin2,authorization,client-policies,impersonation,recovery-codes,scripts,step-up-authentication,token-exchange,update-email,web-authn
+      KC_CACHE_CONFIG_FILE: cache-local.xml
       
       # Host configuration
       KEYCLOAK_HOSTNAME: ${KC_HOSTNAME:-localhost}
@@ -83,7 +87,6 @@ services:
       retries: 10
       start_period: 120s
     volumes:
-      - ./keycloak/conf/cache-ispn.xml:/opt/bitnami/keycloak/conf/cache-ispn.xml:ro
       - ./keycloak/themes:/opt/bitnami/keycloak/themes
       - ./keycloak/certs:/opt/bitnami/keycloak/certs
       - ./keycloak/import:/opt/bitnami/keycloak/data/import
