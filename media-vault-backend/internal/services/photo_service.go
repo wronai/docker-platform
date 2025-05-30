@@ -1,9 +1,11 @@
 package services
 
 import (
+	"context"
 	"database/sql"
 	"mime/multipart"
 	"time"
+	"github.com/valyala/fasthttp"
 	"github.com/wronai/media-vault-backend/internal/models"
 )
 
@@ -15,22 +17,76 @@ func NewPhotoService(db *sql.DB) *PhotoService {
     return &PhotoService{db: db}
 }
 
-// CreatePhotoFromUpload creates a photo record from uploaded file
-func (s *PhotoService) CreatePhotoFromUpload(fileHeader *multipart.FileHeader, userID string, partnerID *string) (*models.Photo, error) {
-    // Implementation from main.go
-    return &models.Photo{}, nil
+// UploadPhoto handles photo upload
+func (s *PhotoService) UploadPhoto(ctx context.Context, userID string, fileHeader *multipart.FileHeader, meta map[string]interface{}) (*models.Photo, error) {
+    // TODO: Implement actual file upload and database record creation
+    return &models.Photo{
+        ID:        "generated-id",
+        UserID:    userID,
+        Filename:  fileHeader.Filename,
+        Size:      fileHeader.Size,
+        MimeType:  fileHeader.Header.Get("Content-Type"),
+        CreatedAt: time.Now(),
+        UpdatedAt: time.Now(),
+    }, nil
 }
 
 // GetPhoto retrieves a photo by ID
 func (s *PhotoService) GetPhoto(photoID string) (*models.Photo, error) {
-    // Implementation from main.go
-    return &models.Photo{}, nil
+    // TODO: Implement actual database query
+    return &models.Photo{
+        ID:        photoID,
+        UserID:    "user-id",
+        Filename:  "example.jpg",
+        Size:      1024,
+        MimeType:  "image/jpeg",
+        CreatedAt: time.Now(),
+        UpdatedAt: time.Now(),
+    }, nil
 }
 
-// UpdatePhoto updates a photo record
-func (s *PhotoService) UpdatePhoto(photo *models.Photo) error {
-    // Implementation from main.go
+// ListPhotos lists photos with pagination and filtering
+func (s *PhotoService) ListPhotos(ctx context.Context, userID string, page, limit int, filters map[string]interface{}) ([]*models.Photo, int, error) {
+    // TODO: Implement actual database query with pagination
+    return []*models.Photo{}, 0, nil
+}
+
+// UpdatePhoto updates a photo's metadata
+func (s *PhotoService) UpdatePhoto(ctx context.Context, photoID string, userID string, updates map[string]interface{}) (*models.Photo, error) {
+    // TODO: Implement actual update logic
+    return &models.Photo{
+        ID:        photoID,
+        UserID:    userID,
+        Filename:  "updated.jpg",
+        Size:      1024,
+        MimeType:  "image/jpeg",
+        CreatedAt: time.Now(),
+        UpdatedAt: time.Now(),
+    }, nil
+}
+
+// DeletePhoto removes a photo
+func (s *PhotoService) DeletePhoto(ctx context.Context, photoID, userID string) error {
+    // TODO: Implement actual delete logic
     return nil
+}
+
+// GetThumbnail retrieves a photo's thumbnail
+func (s *PhotoService) GetThumbnail(photoID string) ([]byte, string, error) {
+    // TODO: Implement thumbnail generation/retrieval
+    return []byte{}, "image/jpeg", nil
+}
+
+// GenerateDescription generates an AI description for a photo
+func (s *PhotoService) GenerateDescription(ctx context.Context, photoID, userID string) (string, error) {
+    // TODO: Implement AI description generation
+    return "Generated description for photo " + photoID, nil
+}
+
+// GetSharedWith gets the list of users a photo is shared with
+func (s *PhotoService) GetSharedWith(photoID string) ([]string, error) {
+    // TODO: Implement sharing logic
+    return []string{}, nil
 }
 
 // GetPartnerPhotos retrieves photos for a partner with pagination

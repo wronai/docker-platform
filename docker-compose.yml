@@ -46,9 +46,16 @@ services:
       KEYCLOAK_ENABLE_HTTPS: "false"  # Disable HTTPS as we're behind a reverse proxy
       KEYCLOAK_ENABLE_STATISTICS: true
       KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: true
+      KEYCLOAK_CACHE: local
+      
+      # Disable clustering in development
+      KC_CACHE: local
+      KC_CACHE_STACK: local
+      KC_CACHE_CONFIG_FILE: local
       
       # Host configuration
       KEYCLOAK_HOSTNAME: ${KC_HOSTNAME:-localhost}
+      KC_HOSTNAME_STRICT: "false"
       KEYCLOAK_HOSTNAME_STRICT: false
       KEYCLOAK_HOSTNAME_STRICT_HTTPS: false
       
