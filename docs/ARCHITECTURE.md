@@ -1,4 +1,143 @@
-# 🏗️ Media Vault - Infrastructure Administration
+# 🏗️ Media Vault - Architecture Reference
+
+## 🌐 System Architecture
+
+This document provides a comprehensive overview of the Media Vault system architecture, including its components, data flow, and design decisions.
+
+### High-Level Architecture
+
+```mermaid
+graph TD
+    User[👤 User] --> Browser[🌐 Browser]
+    Browser --> Caddy[🔶 Caddy Proxy]
+    
+    %% Authentication Flow
+    Browser -.->|1. Login| Keycloak[🔐 Keycloak Auth]
+    Keycloak -.->|2. JWT Token| Browser
+    
+    %% Application Flow
+    Caddy -->|3. Serve UI| Flutter[🎨 Flutter Web]
+    Caddy -->|4. API Requests| VaultAPI[🔒 Media Vault API]
+    
+    %% Backend Services
+    VaultAPI -->|5. Validate| Keycloak
+    VaultAPI -->|6. Store/Retrieve| Database[(📊 PostgreSQL)]
+    VaultAPI -->|7. Process| Analyzer[🔍 Media Analyzer]
+    VaultAPI -->|8. Scan| NSFW[🤖 NSFW Detector]
+    
+    %% Storage
+    VaultAPI -->|9. Store Files| Storage[💾 Object Storage]
+    
+    %% Monitoring
+    subgraph "📊 Monitoring"
+        Prometheus[Prometheus]
+        Grafana[Grafana]
+        Loki[Loki]
+        Promtail[Promtail]
+    end
+    
+    VaultAPI -->|10. Metrics| Prometheus
+    Prometheus -->|11. Visualize| Grafana
+    VaultAPI -->|12. Logs| Loki
+    
+    %% Styling
+    classDef frontend fill:#e3f2fd,stroke:#1976d2
+    classDef backend fill:#4a148c,stroke:#7b1fa2,color:white
+    classDef auth fill:#fff3e0,stroke:#f57c00
+    classDef storage fill:#fff8e1,stroke:#f57c00
+    classDef monitoring fill:#e8f5e9,stroke:#388e3c
+    
+    class Flutter frontend
+    class VaultAPI,Analyzer,NSFW backend
+    class Keycloak auth
+    class Database,Storage storage
+    class Prometheus,Grafana,Loki,Promtail monitoring
+```
+
+## 🧱 Core Components
+
+### 1. Frontend (Flutter Web)
+- **Responsive UI**: Works on all devices
+- **Progressive Web App (PWA)**: Installable on desktop/mobile
+- **State Management**: Provider/Riverpod
+- **Theming**: Light/Dark mode support
+
+### 2. API Layer (Go + Fiber)
+- **RESTful API**: JSON-based endpoints
+- **Authentication**: JWT validation with Keycloak
+- **Rate Limiting**: Protect against abuse
+- **Request Validation**: Input sanitization
+- **Documentation**: OpenAPI/Swagger
+
+### 3. Authentication (Keycloak)
+- **Single Sign-On (SSO)**: Support for OAuth2/OIDC
+- **Multi-Factor Auth**: TOTP, WebAuthn
+- **User Federation**: LDAP, Active Directory
+- **Role-Based Access Control (RBAC)**: Fine-grained permissions
+
+### 4. Media Processing
+- **File Analysis**: Extract metadata
+- **Thumbnail Generation**: For images and videos
+- **Content Moderation**: NSFW detection
+- **Format Conversion**: Transcoding to web-friendly formats
+
+### 5. Storage
+- **Object Storage**: S3-compatible (MinIO)
+- **Encryption**: At-rest and in-transit
+- **Versioning**: File history and rollback
+- **Replication**: Cross-region replication for DR
+
+### 6. Monitoring & Observability
+- **Metrics**: Prometheus
+- **Visualization**: Grafana dashboards
+- **Logging**: Loki + Promtail
+- **Alerting**: Alertmanager
+
+## 🔄 Data Flow
+
+### File Upload Process
+1. User authenticates and gets JWT
+2. Client requests signed upload URL from API
+3. Client uploads file directly to storage
+4. API processes the file asynchronously
+5. Metadata is stored in database
+6. User receives upload confirmation
+
+### Authentication Flow
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant K as Keycloak
+    participant A as API
+    
+    U->>F: Access app
+    F->>K: Redirect to login
+    U->>K: Enter credentials
+    K->>F: Return JWT
+    F->>A: Request with JWT
+    A->>K: Validate token
+    K->>A: Token info
+    A->>F: Protected data
+    F->>U: Render UI
+```
+
+## 🚀 Infrastructure Administration
+
+Below is the detailed infrastructure stack that powers Media Vault:
+
+### 📊 Complete Infrastructure Stack
+
+```ascii
+                    🏗️ INFRASTRUCTURE OVERVIEW
+┌─────────────────────────────────────────────────────────────────────┐
+│                          MONITORING LAYER                          │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐   │
+│  │  Prometheus │ │   Grafana   │ │AlertManager │ │   Jaeger    │   │
+│  │ :9090       │ │ :3333       │ │ :9093       │ │ :16686      │   │
+│  │ Metrics     │ │ Dashboards  │ │ Alerts      │ │ Tracing     │   │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
 
 ## 📊 Complete Infrastructure Stack
 
