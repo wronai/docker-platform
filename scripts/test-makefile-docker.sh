@@ -27,7 +27,17 @@ trap trap_handler EXIT
 # Copy necessary files to temp directory
 echo -e "${YELLOW}📦 Copying project files...${NC}"
 cp Makefile "${TEMP_DIR}/"
-cp .env.example "${TEMP_DIR}/.env"
+
+# Create a minimal .env file if .env.example doesn't exist
+if [ ! -f .env.example ]; then
+    echo -e "${YELLOW}ℹ️  Creating minimal .env file...${NC}"
+    echo "# Minimal .env file for testing" > "${TEMP_DIR}/.env"
+    echo "COMPOSE_PROJECT_NAME=makefile-test" >> "${TEMP_DIR}/.env"
+else
+    cp .env.example "${TEMP_DIR}/.env"
+fi
+
+# Copy docker-compose files
 cp -r docker-compose* "${TEMP_DIR}/" 2>/dev/null || true
 
 # Create a test Dockerfile
