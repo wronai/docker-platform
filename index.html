@@ -1,344 +1,434 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>File Explorer</title>
-    <!-- Highlight.js CSS -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Book</title>
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
-    <!-- Load highlight.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-    <!-- Load language support -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/yaml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/json.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/dockerfile.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/bash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/javascript.min.js"></script>
+    <!-- Table of Contents generator -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-toc@1.2.0/dist/markdown-toc.min.js"></script>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0;
-            padding: 20px;
-            height: 100vh;
+        :root {
+            --sidebar-width: 280px;
+            --header-height: 60px;
+            --primary-color: #0366d6;
+            --text-color: #24292e;
+            --border-color: #e1e4e8;
+            --bg-color: #ffffff;
+            --sidebar-bg: #f6f8fa;
+            --code-bg: #f6f8fa;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            --font-mono: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+        }
+
+        * {
             box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
-        .container {
-            display: flex;
-            flex: 1;
-            gap: 20px;
-            height: calc(100% - 80px);
-            overflow: hidden;
-        }
-        .file-list-container {
-            flex: 1;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .file-list-header {
-            padding: 10px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #ddd;
-            font-weight: bold;
-        }
-        #file-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px 0;
-        }
-        .file { 
-            padding: 8px 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .file:hover { 
-            background: #f0f0f0; 
-        }
-        .dir { 
-            font-weight: bold;
-        }
-        .file-content-container {
-            flex: 2;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .file-content-header {
-            padding: 10px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #ddd;
-            font-weight: bold;
-        }
-        #file-content {
-            flex: 1;
-            padding: 15px;
-            background: white;
-            overflow-y: auto;
             margin: 0;
-        }
-        pre { 
-            margin: 0;
-            padding: 1em;
-            white-space: pre-wrap;
-            font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            border-radius: 4px;
-            background: #f6f8fa !important;
-            overflow-x: auto;
-        }
-        
-        /* Add some spacing for code blocks */
-        code {
-            font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', monospace;
-        }
-        
-        /* Fix for JSON syntax highlighting */
-        .hljs-attr {
-            color: #d946ef;
-        }
-        
-        /* Make line numbers visible */
-        .hljs-ln {
             padding: 0;
         }
-        
-        .hljs-ln-n {
-            padding-right: 1em;
-            color: #6e7781;
-            user-select: none;
+
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            display: flex;
+            min-height: 100vh;
         }
-        .breadcrumb { 
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
+
+        /* Sidebar */
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 100;
         }
-        .breadcrumb a { 
-            color: #007bff; 
+
+        #sidebar h2 {
+            font-size: 1.2em;
+            margin-bottom: 1em;
+            padding-bottom: 0.5em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #toc {
+            font-size: 0.9em;
+        }
+
+        #toc ul {
+            list-style: none;
+            padding-left: 1em;
+        }
+
+        #toc a {
+            color: var(--text-color);
             text-decoration: none;
+            display: block;
+            padding: 4px 0;
+            transition: color 0.2s;
         }
-        .breadcrumb a:hover {
-            text-decoration: underline;
+
+        #toc a:hover {
+            color: var(--primary-color);
+        }
+
+        #toc .toc-h1 { margin-left: 0; font-weight: 600; }
+        #toc .toc-h2 { margin-left: 1em; }
+        #toc .toc-h3 { margin-left: 2em; font-size: 0.9em; }
+        #toc .toc-h4 { margin-left: 3em; font-size: 0.85em; }
+        #toc .toc-h5 { margin-left: 4em; font-size: 0.8em; }
+        #toc .toc-h6 { margin-left: 5em; font-size: 0.75em; }
+
+        /* Main content */
+        #main {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            max-width: 900px;
+            padding: 2em 3em;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 1.2em;
+        }
+
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Markdown content */
+        .markdown-body {
+            line-height: 1.8;
+        }
+
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3,
+        .markdown-body h4,
+        .markdown-body h5,
+        .markdown-body h6 {
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+            font-weight: 600;
+            line-height: 1.25;
+            position: relative;
+            padding-top: 1em;
+        }
+
+        .markdown-body h1:not(:first-child) {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5em;
+            margin-top: 2em;
+        }
+
+        .markdown-body h1 { font-size: 2em; }
+        .markdown-body h2 { font-size: 1.5em; }
+        .markdown-body h3 { font-size: 1.25em; }
+        .markdown-body h4 { font-size: 1em; }
+        .markdown-body h5 { font-size: 0.875em; }
+        .markdown-body h6 { font-size: 0.85em; color: #6a737d; }
+
+        .markdown-body p {
+            margin-top: 0;
+            margin-bottom: 1em;
+        }
+
+        .markdown-body ul,
+        .markdown-body ol {
+            padding-left: 2em;
+            margin-top: 0;
+            margin-bottom: 1em;
+        }
+
+        .markdown-body li {
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-body code {
+            background-color: var(--code-bg);
+            border-radius: 3px;
+            padding: 0.2em 0.4em;
+            font-family: var(--font-mono);
+            font-size: 85%;
+        }
+
+        .markdown-body pre {
+            background-color: var(--code-bg);
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+            line-height: 1.45;
+            margin-bottom: 1.5em;
+        }
+
+        .markdown-body pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .markdown-body blockquote {
+            border-left: 0.25em solid #dfe2e5;
+            color: #6a737d;
+            padding: 0 1em;
+            margin: 0 0 1.5em 0;
+        }
+
+        .markdown-body table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1.5em;
+            display: block;
+            overflow: auto;
+        }
+
+        .markdown-body table th,
+        .markdown-body table td {
+            border: 1px solid #dfe2e5;
+            padding: 6px 13px;
+        }
+
+        .markdown-body table tr {
+            background-color: #fff;
+            border-top: 1px solid #c6cbd1;
+        }
+
+        .markdown-body table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+
+        /* File indicators */
+        .file-section {
+            position: relative;
+        }
+
+        .file-path {
+            position: absolute;
+            right: 0;
+            top: 0.5em;
+            font-size: 0.7em;
+            color: #6a737d;
+            background: #f6f8fa;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-family: var(--font-mono);
+        }
+
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            :root {
+                --sidebar-width: 250px;
+            }
+            
+            #main {
+                padding: 1.5em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            #sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            #main {
+                margin-left: 0;
+                padding: 1em;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>File Explorer</h1>
-    <div class="breadcrumb" id="breadcrumb">
-        <a href="#" data-path="">Root</a>
+    <div id="sidebar">
+        <h2>Table of Contents</h2>
+        <div id="toc"></div>
     </div>
-    <div class="container">
-        <div class="file-list-container">
-            <div class="file-list-header">Files</div>
-            <div id="file-list">Loading...</div>
+
+    <div id="main">
+        <div class="loading">
+            <div class="spinner"></div>
+            <span>Loading documentation...</span>
         </div>
-        <div class="file-content-container">
-            <div class="file-content-header">File Content</div>
-            <div id="file-content">Select a file to view its contents</div>
-        </div>
+        <div id="content" class="markdown-body" style="display: none;"></div>
     </div>
 
     <script>
-        let fileSystem = null;
-        let currentPath = [];
-
-        // Load file system data
-        async function loadFileSystem() {
+        // Configuration
+        const API_URL = 'data/file-system.json';
+        
+        // DOM Elements
+        const contentEl = document.getElementById('content');
+        const loadingEl = document.querySelector('.loading');
+        const tocEl = document.getElementById('toc');
+        
+        // Load and process file system
+        async function loadDocumentation() {
             try {
-                const response = await fetch('data/file-system.json');
-                fileSystem = await response.json();
-                renderFileList();
-            } catch (error) {
-                document.getElementById('file-list').innerHTML = 'Error loading file system: ' + error.message;
-            }
-        }
-
-        // Render file list for current path
-        function renderFileList() {
-            const fileList = document.getElementById('file-list');
-            const currentDir = getCurrentDir();
-            
-            if (!currentDir || !currentDir.children) {
-                fileList.innerHTML = 'No files found';
-                return;
-            }
-
-            let html = '';
-            currentDir.children.forEach(item => {
-                const isDir = item.type === 'directory';
-                html += `
-                    <div class="file ${isDir ? 'dir' : ''}" 
-                         data-type="${item.type}" 
-                         data-path="${item.path}">
-                        <span>${isDir ? '[DIR]' : '[FILE]'}</span>
-                        <span>${item.name}</span>
-                        ${!isDir ? `<span>${formatFileSize(item.size)}</span>` : ''}
-                    </div>`;
-            });
-            
-            fileList.innerHTML = html || 'Empty directory';
-            
-            // Add click handlers
-            document.querySelectorAll('.file').forEach(el => {
-                el.addEventListener('click', handleFileClick);
-            });
-        }
-
-        // Handle file/directory click
-        function handleFileClick(e) {
-            const type = this.getAttribute('data-type');
-            const path = this.getAttribute('data-path').split('/').filter(Boolean);
-            
-            if (type === 'directory') {
-                currentPath = path;
-                renderBreadcrumb();
-                renderFileList();
-                document.getElementById('file-content').innerHTML = '';
-            } else {
-                showFileContent(path[path.length - 1]);
-            }
-        }
-
-        // Show file content
-        function getLanguageFromFilename(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const languageMap = {
-                'js': 'javascript',
-                'jsx': 'javascript',
-                'ts': 'typescript',
-                'tsx': 'typescript',
-                'py': 'python',
-                'rb': 'ruby',
-                'java': 'java',
-                'c': 'c',
-                'cpp': 'cpp',
-                'cs': 'csharp',
-                'php': 'php',
-                'sh': 'bash',
-                'json': 'json',
-                'yaml': 'yaml',
-                'yml': 'yaml',
-                'xml': 'xml',
-                'html': 'html',
-                'css': 'css',
-                'scss': 'scss',
-                'sql': 'sql',
-                'md': 'markdown',
-                'dockerfile': 'dockerfile',
-                'go': 'go',
-                'rs': 'rust',
-                'swift': 'swift',
-                'kt': 'kotlin',
-                'dart': 'dart'
-            };
-            return languageMap[ext] || 'plaintext';
-        }
-
-        function showFileContent(filename) {
-            const currentDir = getCurrentDir();
-            const file = currentDir.children.find(f => f.name === filename);
-            const contentDiv = document.getElementById('file-content');
-            
-            if (!file || !file.content) {
-                contentDiv.innerHTML = 'No content to display';
-                return;
-            }
-            
-            try {
-                const language = getLanguageFromFilename(filename);
-                let content = file.content;
+                // Show loading state
+                contentEl.style.display = 'none';
+                loadingEl.style.display = 'flex';
                 
-                // Format JSON if needed
-                if (language === 'json') {
-                    try {
-                        content = JSON.stringify(JSON.parse(content), null, 2);
-                    } catch (e) {
-                        console.warn('Error parsing JSON:', e);
-                    }
-                }
+                // Load file system
+                const response = await fetch(API_URL);
+                const fileSystem = await response.json();
                 
-                // Escape HTML and add syntax highlighting
-                const escaped = escapeHtml(content);
-                contentDiv.innerHTML = `<pre><code class="language-${language}">${escaped}</code></pre>`;
+                // Extract and sort markdown files
+                const markdownFiles = [];
+                extractMarkdownFiles(fileSystem, markdownFiles);
+                
+                // Sort files by path (alphabetical order)
+                markdownFiles.sort((a, b) => a.path.localeCompare(b.path));
+                
+                // Load and render all markdown files
+                await renderMarkdownFiles(markdownFiles);
+                
+                // Generate table of contents
+                generateTOC();
+                
+                // Hide loading state, show content
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
                 
                 // Apply syntax highlighting
                 document.querySelectorAll('pre code').forEach((block) => {
                     hljs.highlightElement(block);
                 });
                 
+                // Scroll to hash if present in URL
+                if (window.location.hash) {
+                    const id = window.location.hash.substring(1);
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.scrollIntoView();
+                    }
+                }
+                
             } catch (error) {
-                console.error('Error displaying file content:', error);
-                contentDiv.innerHTML = `<pre>${escapeHtml(file.content)}</pre>`;
+                console.error('Error loading documentation:', error);
+                loadingEl.innerHTML = `
+                    <div style="color: #cb2431; text-align: center; padding: 2em;">
+                        <h2>Error Loading Documentation</h2>
+                        <p>${error.message}</p>
+                        <p>Make sure to run <code>generate_structure.py</code> first.</p>
+                    </div>
+                `;
             }
         }
-
-        // Render breadcrumb navigation
-        function renderBreadcrumb() {
-            const breadcrumb = document.getElementById('breadcrumb');
-            let html = '<a href="#" data-path="">Root</a>';
+        
+        // Recursively extract all markdown files from the file system
+        function extractMarkdownFiles(node, result = []) {
+            if (!node) return;
             
-            currentPath.forEach((segment, index) => {
-                const path = currentPath.slice(0, index + 1).join('/');
-                html += ` / <a href="#" data-path="${path}">${segment}</a>`;
-            });
-            
-            breadcrumb.innerHTML = html;
-            
-            // Add click handlers to breadcrumb links
-            breadcrumb.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const path = link.getAttribute('data-path');
-                    currentPath = path ? path.split('/') : [];
-                    renderBreadcrumb();
-                    renderFileList();
-                    document.getElementById('file-content').innerHTML = '';
+            if (node.type === 'file' && node.name.endsWith('.md')) {
+                result.push({
+                    name: node.name,
+                    path: node.path,
+                    content: node.content || ''
                 });
-            });
-        }
-
-        // Get current directory based on path
-        function getCurrentDir() {
-            let current = fileSystem;
-            for (const segment of currentPath) {
-                if (!current.children) return null;
-                const found = current.children.find(item => item.name === segment);
-                if (!found) return null;
-                current = found;
+            } else if (node.children) {
+                for (const child of node.children) {
+                    extractMarkdownFiles(child, result);
+                }
             }
-            return current;
         }
-
-        // Helper functions
-        function formatFileSize(bytes) {
-            if (!bytes) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        
+        // Render all markdown files to the page
+        async function renderMarkdownFiles(files) {
+            let html = '';
+            
+            for (const file of files) {
+                try {
+                    // Add file section with path indicator
+                    html += `
+                        <div class="file-section">
+                            <div class="file-path" title="${file.path}">${file.path}</div>
+                            ${marked.parse(file.content || '')}
+                        </div>
+                        <hr style="margin: 2em 0; border: 0; border-top: 1px dashed #e1e4e8;">
+                    `;
+                } catch (error) {
+                    console.error(`Error rendering ${file.path}:`, error);
+                    html += `
+                        <div class="file-section">
+                            <h2>Error Loading: ${file.name}</h2>
+                            <pre>${error.message}</pre>
+                        </div>
+                    `;
+                }
+            }
+            
+            contentEl.innerHTML = html;
         }
-
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+        
+        // Generate table of contents from headings
+        function generateTOC() {
+            const headings = contentEl.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            let tocHtml = '<ul>';
+            let currentLevel = 1;
+            
+            headings.forEach((heading, index) => {
+                // Skip file path indicators
+                if (heading.classList.contains('file-path')) return;
+                
+                const level = parseInt(heading.tagName.substring(1));
+                const id = `heading-${index}`;
+                
+                // Set ID for anchor links
+                heading.id = id;
+                
+                // Add TOC entry
+                if (level > currentLevel) {
+                    tocHtml += '<ul>'.repeat(level - currentLevel);
+                } else if (level < currentLevel) {
+                    tocHtml += '</li></ul>'.repeat(currentLevel - level);
+                } else {
+                    tocHtml += '</li>';
+                }
+                
+                tocHtml += `<li class="toc-h${level}"><a href="#${id}">${heading.textContent}</a>`;
+                currentLevel = level;
+            });
+            
+            // Close any open lists
+            tocHtml += '</li></ul>'.repeat(currentLevel - 1);
+            tocHtml += '</ul>';
+            
+            tocEl.innerHTML = tocHtml;
         }
-
+        
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFileSystem();
-        });
+        document.addEventListener('DOMContentLoaded', loadDocumentation);
     </script>
 </body>
 </html>

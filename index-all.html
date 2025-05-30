@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Explorer</title>
+    <!-- Highlight.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <!-- Load highlight.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <!-- Load language support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/dockerfile.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/javascript.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            height: calc(100% - 80px);
+            overflow: hidden;
+        }
+        .file-list-container {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .file-list-header {
+            padding: 10px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        #file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        .file { 
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .file:hover { 
+            background: #f0f0f0; 
+        }
+        .dir { 
+            font-weight: bold;
+        }
+        .file-content-container {
+            flex: 2;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .file-content-header {
+            padding: 10px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        #file-content {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            overflow-y: auto;
+            margin: 0;
+        }
+        pre { 
+            margin: 0;
+            padding: 1em;
+            white-space: pre-wrap;
+            font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            border-radius: 4px;
+            background: #f6f8fa !important;
+            overflow-x: auto;
+        }
+        
+        /* Add some spacing for code blocks */
+        code {
+            font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', monospace;
+        }
+        
+        /* Fix for JSON syntax highlighting */
+        .hljs-attr {
+            color: #d946ef;
+        }
+        
+        /* Make line numbers visible */
+        .hljs-ln {
+            padding: 0;
+        }
+        
+        .hljs-ln-n {
+            padding-right: 1em;
+            color: #6e7781;
+            user-select: none;
+        }
+        .breadcrumb { 
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .breadcrumb a { 
+            color: #007bff; 
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Explorer</h1>
+    <div class="breadcrumb" id="breadcrumb">
+        <a href="#" data-path="">Root</a>
+    </div>
+    <div class="container">
+        <div class="file-list-container">
+            <div class="file-list-header">Files</div>
+            <div id="file-list">Loading...</div>
+        </div>
+        <div class="file-content-container">
+            <div class="file-content-header">File Content</div>
+            <div id="file-content">Select a file to view its contents</div>
+        </div>
+    </div>
+
+    <script>
+        let fileSystem = null;
+        let currentPath = [];
+
+        // Load file system data
+        async function loadFileSystem() {
+            try {
+                const response = await fetch('data/file-system.json');
+                fileSystem = await response.json();
+                renderFileList();
+            } catch (error) {
+                document.getElementById('file-list').innerHTML = 'Error loading file system: ' + error.message;
+            }
+        }
+
+        // Render file list for current path
+        function renderFileList() {
+            const fileList = document.getElementById('file-list');
+            const currentDir = getCurrentDir();
+            
+            if (!currentDir || !currentDir.children) {
+                fileList.innerHTML = 'No files found';
+                return;
+            }
+
+            let html = '';
+            currentDir.children.forEach(item => {
+                const isDir = item.type === 'directory';
+                html += `
+                    <div class="file ${isDir ? 'dir' : ''}" 
+                         data-type="${item.type}" 
+                         data-path="${item.path}">
+                        <span>${isDir ? '[DIR]' : '[FILE]'}</span>
+                        <span>${item.name}</span>
+                        ${!isDir ? `<span>${formatFileSize(item.size)}</span>` : ''}
+                    </div>`;
+            });
+            
+            fileList.innerHTML = html || 'Empty directory';
+            
+            // Add click handlers
+            document.querySelectorAll('.file').forEach(el => {
+                el.addEventListener('click', handleFileClick);
+            });
+        }
+
+        // Handle file/directory click
+        function handleFileClick(e) {
+            const type = this.getAttribute('data-type');
+            const path = this.getAttribute('data-path').split('/').filter(Boolean);
+            
+            if (type === 'directory') {
+                currentPath = path;
+                renderBreadcrumb();
+                renderFileList();
+                document.getElementById('file-content').innerHTML = '';
+            } else {
+                showFileContent(path[path.length - 1]);
+            }
+        }
+
+        // Show file content
+        function getLanguageFromFilename(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const languageMap = {
+                'js': 'javascript',
+                'jsx': 'javascript',
+                'ts': 'typescript',
+                'tsx': 'typescript',
+                'py': 'python',
+                'rb': 'ruby',
+                'java': 'java',
+                'c': 'c',
+                'cpp': 'cpp',
+                'cs': 'csharp',
+                'php': 'php',
+                'sh': 'bash',
+                'json': 'json',
+                'yaml': 'yaml',
+                'yml': 'yaml',
+                'xml': 'xml',
+                'html': 'html',
+                'css': 'css',
+                'scss': 'scss',
+                'sql': 'sql',
+                'md': 'markdown',
+                'dockerfile': 'dockerfile',
+                'go': 'go',
+                'rs': 'rust',
+                'swift': 'swift',
+                'kt': 'kotlin',
+                'dart': 'dart'
+            };
+            return languageMap[ext] || 'plaintext';
+        }
+
+        function showFileContent(filename) {
+            const currentDir = getCurrentDir();
+            const file = currentDir.children.find(f => f.name === filename);
+            const contentDiv = document.getElementById('file-content');
+            
+            if (!file || !file.content) {
+                contentDiv.innerHTML = 'No content to display';
+                return;
+            }
+            
+            try {
+                const language = getLanguageFromFilename(filename);
+                let content = file.content;
+                
+                // Format JSON if needed
+                if (language === 'json') {
+                    try {
+                        content = JSON.stringify(JSON.parse(content), null, 2);
+                    } catch (e) {
+                        console.warn('Error parsing JSON:', e);
+                    }
+                }
+                
+                // Escape HTML and add syntax highlighting
+                const escaped = escapeHtml(content);
+                contentDiv.innerHTML = `<pre><code class="language-${language}">${escaped}</code></pre>`;
+                
+                // Apply syntax highlighting
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+                
+            } catch (error) {
+                console.error('Error displaying file content:', error);
+                contentDiv.innerHTML = `<pre>${escapeHtml(file.content)}</pre>`;
+            }
+        }
+
+        // Render breadcrumb navigation
+        function renderBreadcrumb() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            let html = '<a href="#" data-path="">Root</a>';
+            
+            currentPath.forEach((segment, index) => {
+                const path = currentPath.slice(0, index + 1).join('/');
+                html += ` / <a href="#" data-path="${path}">${segment}</a>`;
+            });
+            
+            breadcrumb.innerHTML = html;
+            
+            // Add click handlers to breadcrumb links
+            breadcrumb.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const path = link.getAttribute('data-path');
+                    currentPath = path ? path.split('/') : [];
+                    renderBreadcrumb();
+                    renderFileList();
+                    document.getElementById('file-content').innerHTML = '';
+                });
+            });
+        }
+
+        // Get current directory based on path
+        function getCurrentDir() {
+            let current = fileSystem;
+            for (const segment of currentPath) {
+                if (!current.children) return null;
+                const found = current.children.find(item => item.name === segment);
+                if (!found) return null;
+                current = found;
+            }
+            return current;
+        }
+
+        // Helper functions
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFileSystem();
+        });
+    </script>
+</body>
+</html>

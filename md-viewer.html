@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Viewer</title>
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        #sidebar {
+            width: 300px;
+            padding: 20px;
+            border-right: 1px solid #e1e4e8;
+            overflow-y: auto;
+            max-height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+        
+        #content {
+            flex: 1;
+            padding: 0 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .file-item {
+            padding: 5px 0;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-item:hover {
+            color: #0366d6;
+            text-decoration: underline;
+        }
+        
+        .directory {
+            margin-top: 10px;
+        }
+        
+        .directory-name {
+            font-weight: bold;
+            margin: 15px 0 5px 0;
+            cursor: pointer;
+        }
+        
+        .directory-contents {
+            margin-left: 15px;
+            display: none;
+        }
+        
+        .directory.expanded .directory-contents {
+            display: block;
+        }
+        
+        /* Markdown styling */
+        #markdown-content {
+            line-height: 1.8;
+        }
+        
+        #markdown-content h1, 
+        #markdown-content h2, 
+        #markdown-content h3, 
+        #markdown-content h4, 
+        #markdown-content h5, 
+        #markdown-content h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        
+        #markdown-content h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        #markdown-content h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        #markdown-content h3 { font-size: 1.25em; }
+        #markdown-content h4 { font-size: 1em; }
+        #markdown-content h5 { font-size: 0.875em; }
+        #markdown-content h6 { font-size: 0.85em; color: #6a737d; }
+        
+        #markdown-content p { margin-top: 0; margin-bottom: 16px; }
+        #markdown-content ul, #markdown-content ol { padding-left: 2em; margin-top: 0; margin-bottom: 16px; }
+        #markdown-content li { margin-bottom: 0.25em; }
+        #markdown-content code { 
+            background-color: rgba(27, 31, 35, 0.05);
+            border-radius: 3px; 
+            padding: 0.2em 0.4em;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 85%;
+        }
+        #markdown-content pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+            line-height: 1.45;
+            margin-bottom: 16px;
+        }
+        #markdown-content pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+        #markdown-content blockquote {
+            border-left: 0.25em solid #dfe2e5;
+            color: #6a737d;
+            padding: 0 1em;
+            margin: 0 0 16px 0;
+        }
+        #markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 16px;
+            display: block;
+            overflow: auto;
+        }
+        #markdown-content table th, 
+        #markdown-content table td {
+            border: 1px solid #dfe2e5;
+            padding: 6px 13px;
+        }
+        #markdown-content table tr {
+            background-color: #fff;
+            border-top: 1px solid #c6cbd1;
+        }
+        #markdown-content table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h2>Markdown Files</h2>
+        <div id="file-tree">Loading files...</div>
+    </div>
+    
+    <div id="content">
+        <div id="markdown-content">
+            <h1>Markdown Viewer</h1>
+            <p>Select a Markdown file from the sidebar to view its contents.</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'data/file-system.json';
+        
+        // DOM Elements
+        const fileTree = document.getElementById('file-tree');
+        const markdownContent = document.getElementById('markdown-content');
+        
+        // Load and process file system
+        async function loadFileSystem() {
+            try {
+                const response = await fetch(API_URL);
+                const fileSystem = await response.json();
+                renderFileTree(fileSystem);
+            } catch (error) {
+                console.error('Error loading file system:', error);
+                fileTree.innerHTML = 'Error loading file system. Make sure to run generate_structure.py first.';
+            }
+        }
+        
+        // Render file tree
+        function renderFileTree(node, depth = 0) {
+            if (!node) return '';
+            
+            let html = '';
+            
+            // Only process directories and markdown files
+            if (node.type === 'directory') {
+                const hasMarkdownFiles = node.children && node.children.some(child => 
+                    child.type === 'file' && child.name.endsWith('.md')
+                );
+                
+                if (!hasMarkdownFiles) return '';
+                
+                const isRoot = depth === 0;
+                const isExpanded = isRoot;
+                
+                if (!isRoot) {
+                    html += `<div class="directory${isExpanded ? ' expanded' : ''}">
+                        <div class="directory-name" onclick="this.parentElement.classList.toggle('expanded')">
+                            ${node.name}/
+                        </div>
+                        <div class="directory-contents">`;
+                }
+                
+                // Process children
+                if (node.children) {
+                    node.children.forEach(child => {
+                        html += renderFileTree(child, depth + 1);
+                    });
+                }
+                
+                if (!isRoot) {
+                    html += `</div></div>`;
+                }
+            } else if (node.type === 'file' && node.name.endsWith('.md')) {
+                html += `<div class="file-item" data-path="${node.path}">${node.name}</div>`;
+            }
+            
+            if (depth === 0) {
+                fileTree.innerHTML = html || 'No Markdown files found.';
+                
+                // Add click handlers to file items
+                document.querySelectorAll('.file-item').forEach(item => {
+                    item.addEventListener('click', () => loadMarkdownFile(item.getAttribute('data-path')));
+                });
+            }
+            
+            return html;
+        }
+        
+        // Load and render markdown file
+        async function loadMarkdownFile(filePath) {
+            try {
+                const response = await fetch(`/data/file-system.json`);
+                const fileSystem = await response.json();
+                
+                // Find the file in the file system
+                const pathSegments = filePath.split('/');
+                let currentNode = fileSystem;
+                
+                for (const segment of pathSegments) {
+                    if (!currentNode.children) break;
+                    const found = currentNode.children.find(child => child.name === segment);
+                    if (!found) break;
+                    currentNode = found;
+                }
+                
+                if (currentNode.type === 'file' && currentNode.content) {
+                    // Render markdown
+                    markdownContent.innerHTML = `
+                        <div style="margin-bottom: 20px; color: #586069; font-size: 0.9em;">
+                            ${filePath}
+                        </div>
+                        <div id="markdown-rendered">
+                            ${marked.parse(currentNode.content)}
+                        </div>
+                    `;
+                    
+                    // Apply syntax highlighting
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                    
+                    // Update URL
+                    window.history.pushState({}, '', `?file=${encodeURIComponent(filePath)}`);
+                }
+            } catch (error) {
+                console.error('Error loading markdown file:', error);
+                markdownContent.innerHTML = `
+                    <div class="error">
+                        <h2>Error</h2>
+                        <p>Could not load the selected file: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Handle back/forward navigation
+        window.addEventListener('popstate', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const file = urlParams.get('file');
+            if (file) {
+                loadMarkdownFile(file);
+            } else {
+                markdownContent.innerHTML = `
+                    <h1>Markdown Viewer</h1>
+                    <p>Select a Markdown file from the sidebar to view its contents.</p>
+                `;
+            }
+        });
+        
+        // Load initial file if specified in URL
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const file = urlParams.get('file');
+            
+            loadFileSystem().then(() => {
+                if (file) {
+                    // Find and click the file in the tree
+                    const fileItem = document.querySelector(`.file-item[data-path="${file}"]`);
+                    if (fileItem) {
+                        // Expand parent directories
+                        let parent = fileItem.parentElement;
+                        while (parent && parent.classList.contains('directory-contents')) {
+                            const dir = parent.previousElementSibling;
+                            if (dir && dir.classList.contains('directory-name')) {
+                                dir.click(); // Toggle to expand
+                            }
+                            parent = parent.parentElement;
+                        }
+                        fileItem.click();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
