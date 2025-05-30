@@ -264,11 +264,6 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 
 ---
 
-<div align="center">
-  <p>Made with ❤️ by the Media Vault Team</p>
-  <p>For support, please open an issue or contact support@wron.ai</p>
-  <p>📅 Last updated: May 2023</p>
-</div>
 # Run linters
 make lint
 
