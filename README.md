@@ -579,6 +579,12 @@ make coverage-html
 3. Import realm configuration from `keycloak/import/realm-export.json`
 4. Configure identity providers and clients as needed
 
+![keycloak.png](keycloak.png)
+```bash
+admin
+admin123
+```
+
 ### User Management
 
 - Create users in Keycloak admin console

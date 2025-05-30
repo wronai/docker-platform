@@ -10,7 +10,7 @@ RESET  := $(shell tput -Txterm sgr0)
 # Default target
 .DEFAULT_GOAL := help
 
-# Phony targets
+# Phony targets - Keep this list in sync with actual targets
 .PHONY: help \
         init \
         up up-build down restart \
@@ -21,7 +21,7 @@ RESET  := $(shell tput -Txterm sgr0)
         clean clean-all \
         setup-keycloak keycloak-clean keycloak-export \
         deploy \
-        monitor monitoring monitoring-down monitoring-restart monitoring-logs monitoring-status \
+        monitoring monitoring-down monitoring-restart monitoring-logs monitoring-status \
         grafana prometheus alerts \
         status shell-api shell-keycloak \
         dev-start prod-setup backup \
@@ -51,13 +51,32 @@ help: ## Show this help
 	@echo '  make keycloak-clean        Reset Keycloak config'
 	@echo '  make keycloak-export       Export Keycloak configuration'
 	@echo ''
-	@echo '🛠️  Management:'
+	@echo '🛠️  Individual Services:'
+	@echo '  make keycloak              Start Keycloak service'
+	@echo '  make keycloak-db           Start Keycloak database'
+	@echo '  make media-vault-api       Start Media Vault API'
+	@echo '  make media-vault-analyzer  Start AI Processing service'
+	@echo '  make nsfw-analyzer        Start NSFW Analyzer service'
+	@echo '  make flutter-web          Start Flutter Web Frontend'
+	@echo '  make media-vault-admin    Start Admin Panel'
+	@echo '  make caddy                Start Caddy Reverse Proxy'
+	@echo '  make redis                Start Redis Cache'
+	@echo ''
+	@echo '🔧 Management:'
 	@echo '  make down                  Stop all services'
+	@echo '  make restart              Restart all services'
 	@echo '  make clean                Clean up containers and volumes'
 	@echo '  make clean-all            Remove all containers, volumes, and images'
 	@echo '  make logs                 Show application logs'
 	@echo '  make status               Show container status'
 	@echo '  make backup               Create database backup'
+	@echo '  make prod-setup           Configure production settings'
+	@echo ''
+	@echo '🔍 Development:'
+	@echo '  make test                 Run all tests'
+	@echo '  make lint                 Run linters'
+	@echo '  make format               Format code'
+	@echo '  make coverage             Generate test coverage report'
 
 ## Environment
 init: ## Initialize development environment
@@ -489,75 +508,27 @@ shell-keycloak:
 dev-start: clean up-with-auth
 	@echo "🚀 Development environment ready!"
 
-# Production setup
-prod-setup:
-	@echo "🏭 Konfiguracja produkcyjna..."
-	@echo "⚠️  Pamiętaj o:"
-	@echo "   1. Zmianie haseł w production"
-	@echo "   2. Konfiguracji SSL"
-	@echo "   3. Backup strategii"
-	@echo "   4. Monitoringu"
+## Production Setup
+prod-setup: ## Configure production settings
+	@echo "${YELLOW}⚠️  Production Setup${RESET}"
+	@echo "Please ensure you have configured:"
+	@echo "  1. Strong passwords in production"
+	@echo "  2. SSL/TLS configuration"
+	@echo "  3. Backup strategy"
+	@echo "  4. Monitoring and alerting"
 
-# Backup
-backup:
-	@echo "💾 Tworzenie backup..."
+## Backup
+backup: ## Create database backup
+	@echo "${GREEN}💾 Creating backup...${RESET}
+	@mkdir -p backups
 	docker-compose exec media-vault-api sqlite3 /data/media.db ".backup /data/backup_$(shell date +%Y%m%d_%H%M%S).db"
 	./setup-keycloak.sh --export-only
-	tar -czf media-vault-backup-$(shell date +%Y%m%d).tar.gz data/ uploads/ media-vault-realm-export.json
+	tar -czf backups/media-vault-backup-$(shell date +%Y%m%d_%H%M%S).tar.gz data/ uploads/ media-vault-realm-export.json
+	@echo "✅ Backup created in backups/ directory"
 
-
-# Help
-help:
-	@echo "Media Vault - Available Commands:"
-	@echo "================================="
-	@echo ""
-	@echo "🚀 Quick Start:"
-	@echo "  make full-stack-with-monitoring  Complete setup with monitoring"
-	@echo "  make up                          Basic application stack"
-	@echo "  make monitoring                  Monitoring stack only"
-	@echo ""
-	@echo "📊 Monitoring:"
-	@echo "  make grafana                     Open Grafana (localhost:3333)"
-	@echo "  make prometheus                  Open Prometheus (localhost:9090)"
-	@echo "  make alerts                      Open AlertManager (localhost:9093)"
-	@echo "  make monitoring-status           Show monitoring status"
-	@echo "  make monitoring-logs             Show monitoring logs"
-	@echo ""
-	@echo "🔧 Management:"
-	@echo "  make health-check-full           Complete system health check"
-	@echo "  make load-test-monitored         Performance test with monitoring"
-	@echo "  make backup-monitoring           Backup monitoring data"
-	@echo "  make test-alerts                 Test alert system"
-	@echo ""
-	@echo "🔐 Authentication:"
-	@echo "  make setup-keycloak              Configure Keycloak"
-	@echo "  make keycloak-clean              Reset Keycloak config"
-	@echo ""
-	@echo "🛠️  Utilities:"
-	@echo "  make down                        Stop all services"
-	@echo "  make clean                       Clean up everything"
-	@echo "  make logs                        Show application logs"
-	@echo "Media Vault + Keycloak - Dostępne komendy:"
-	@echo ""
-	@echo "Podstawowe:"
-	@echo "  make up-with-auth    Uruchom z pełną konfiguracją Keycloak"
-	@echo "  make setup-keycloak  Tylko konfiguracja Keycloak"
-	@echo "  make dev-start       Szybki start dla development"
-	@echo ""
-	@echo "Zarządzanie:"
-	@echo "  make up              Uruchom podstawowe serwisy"
-	@echo "  make down            Zatrzymaj wszystko"
-	@echo "  make clean           Wyczyść wszystko"
-	@echo "  make logs            Pokaż logi"
-	@echo ""
-	@echo "Keycloak:"
-	@echo "  make keycloak-clean  Wyczyść konfigurację Keycloak"
-	@echo "  make keycloak-export Eksportuj konfigurację"
-	@echo "  make restart-keycloak Restart Keycloak"
-	@echo ""
-	@echo "Debugging:"
-	@echo "  make status          Status kontenerów"
-	@echo "  make shell-api       Wejdź do API container"
-	@echo "  make backup          Stwórz backup"
-
-
+## Health Check
+health-check: ## Run comprehensive health check
+	@echo "🏥 Running health checks..."
+	@echo "📊 Checking main services..."
+	@curl -s http://localhost:8080/health | jq '.' || echo "❌ API: DOWN"
+	@echo "✅ Health check completed"

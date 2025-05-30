@@ -6,10 +6,8 @@ services:
   keycloak-db:
     image: postgres:15
     container_name: keycloak-db
-    environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_password}
+    env_file:
+      - ./keycloak/.env
     volumes:
       - keycloak_db_data:/var/lib/postgresql/data
       - ./scripts/backup:/backup-scripts
@@ -26,54 +24,12 @@ services:
   keycloak:
     image: bitnami/keycloak:26.2.5
     container_name: keycloak
-    environment:
-      # Database configuration
-      KEYCLOAK_DATABASE_HOST: keycloak-db
-      KEYCLOAK_DATABASE_PORT: 5432
-      KEYCLOAK_DATABASE_NAME: keycloak
-      KEYCLOAK_DATABASE_USER: keycloak
-      KEYCLOAK_DATABASE_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_password}
-      KEYCLOAK_DATABASE_SCHEMA: public
-
-      # Admin user
-      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER:-admin}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin123}
+    env_file:
+      - ./keycloak/.env
       
-      # Server configuration
-      KEYCLOAK_HTTP_PORT: 8080
-      KEYCLOAK_HTTPS_PORT: 8443
-      KEYCLOAK_PROXY: edge
-      KEYCLOAK_ENABLE_HTTPS: "false"  # Disable HTTPS as we're behind a reverse proxy
-      KEYCLOAK_ENABLE_STATISTICS: true
-      KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: true
-      
-      # Cache and clustering configuration
-      KEYCLOAK_CACHE: local
-      KC_CACHE: local
-      KC_CACHE_STACK: tcp
-      KC_HEALTH_ENABLED: "true"
-      KC_METRICS_ENABLED: "false"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_FEATURES: account-api,account2,admin2,authorization,client-policies,impersonation,recovery-codes,scripts,step-up-authentication,token-exchange,update-email,web-authn
-      KC_CACHE_CONFIG_FILE: cache-local.xml
-      
-      # Host configuration
-      KEYCLOAK_HOSTNAME: ${KC_HOSTNAME:-localhost}
-      KEYCLOAK_HOSTNAME_STRICT_HTTPS: false
-      
-      # JVM settings
-      KEYCLOAK_JAVA_OPTS: "-Xms512m -Xmx1024m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true"
-      
-      # Logging
-      KEYCLOAK_LOG_LEVEL: "INFO"
-      
-      # Development settings
-      KEYCLOAK_DEVELOPMENT: "true"
     ports:
       - "${KEYCLOAK_HTTP_PORT:-8082}:8080"
       - "${KEYCLOAK_HTTPS_PORT:-8445}:8443"
-      - "9990:9990"  # Management port
     depends_on:
       keycloak-db:
         condition: service_healthy
@@ -81,14 +37,13 @@ services:
     networks:
       - media-vault-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/realms/master"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 10
-      start_period: 120s
+      start_period: 60s
     volumes:
       - ./keycloak/themes:/opt/bitnami/keycloak/themes
-      - ./keycloak/certs:/opt/bitnami/keycloak/certs
       - ./keycloak/import:/opt/bitnami/keycloak/data/import
       - keycloak_data:/bitnami/keycloak
 
@@ -104,43 +59,8 @@ services:
       - ./data:/data
       - ./uploads:/uploads
       - ./processing:/processing
-    environment:
-      # Database
-      - DATABASE_PATH=/data/media.db
-      - UPLOAD_PATH=/uploads
-      - PROCESSING_PATH=/processing
-      - MAX_FILE_SIZE=${MAX_FILE_SIZE:-100MB}
-      - ALLOWED_TYPES=jpg,jpeg,png,gif,mp4,mov,avi,pdf,webp,heic
-
-      # CORS
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:8000,http://localhost}
-
-      # Vault Configuration
-      - VAULT_NAME=${VAULT_NAME:-MediaVault}
-      - VAULT_VERSION=1.0.0
-      - VAULT_DESCRIPTION="Secure Media Storage with AI Analysis"
-
-      # Keycloak OAuth2 Settings
-      - KEYCLOAK_URL=http://keycloak:8080
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-media-vault}
-      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-media-vault-api}
-      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-vault-api-secret-123}
-      - JWT_ISSUER=http://localhost:8443/realms/${KEYCLOAK_REALM:-media-vault}
-      - JWT_AUDIENCE=media-vault-api
-      - OAUTH2_ENABLED=${OAUTH2_ENABLED:-true}
-
-      # AI Services
-      - AI_DESCRIPTION_ENABLED=${AI_DESCRIPTION_ENABLED:-true}
-      - NSFW_DETECTION_ENABLED=${NSFW_DETECTION_ENABLED:-true}
-      - NSFW_SERVICE_URL=http://nsfw-analyzer:8501
-
-      # Performance
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - DEBUG=${DEBUG:-false}
-
-      # Metrics
-      - METRICS_ENABLED=true
-      - PROMETHEUS_PORT=9090
+    env_file:
+      - ./media-vault-backend/.env
     depends_on:
       keycloak:
         condition: service_healthy
@@ -159,17 +79,8 @@ services:
       context: ./media-vault-analyzer
       dockerfile: Dockerfile
     container_name: media-vault-analyzer
-    environment:
-      - API_URL=http://media-vault-api:8080
-      - PROCESSING_PATH=/processing
-      - OUTPUT_PATH=/uploads
-      - KEYCLOAK_URL=http://keycloak:8080
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-media-vault}
-      - SERVICE_ACCOUNT_CLIENT_ID=analyzer-service
-      - SERVICE_ACCOUNT_SECRET=${ANALYZER_SERVICE_SECRET:-analyzer-secret-123}
-      - AI_MODEL_PATH=/models
-      - BATCH_SIZE=${AI_BATCH_SIZE:-10}
-      - DESCRIPTION_LANGUAGE=${DESCRIPTION_LANGUAGE:-en}
+    env_file:
+      - ./media-vault-analyzer/.env
     volumes:
       - ./uploads:/uploads
       - ./processing:/processing
@@ -195,14 +106,8 @@ services:
     container_name: nsfw-analyzer
     ports:
       - "${NSFW_PORT:-8501}:8501"
-    environment:
-      - MODEL_PATH=/models
-      - API_URL=http://media-vault-api:8080
-      - KEYCLOAK_URL=http://keycloak:8080
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-media-vault}
-      - SERVICE_ACCOUNT_CLIENT_ID=nsfw-service
-      - SERVICE_ACCOUNT_SECRET=${NSFW_SERVICE_SECRET:-nsfw-secret-123}
-      - CONFIDENCE_THRESHOLD=${NSFW_THRESHOLD:-0.8}
+    env_file:
+      - ./nsfw-analyzer/.env
     volumes:
       - ./models:/models
       - ./uploads:/uploads:ro
@@ -229,15 +134,8 @@ services:
     container_name: flutter-web
     ports:
       - "${FRONTEND_PORT:-3000}:80"
-    environment:
-      - API_BASE_URL=http://localhost:${API_PORT:-8080}
-      - KEYCLOAK_URL=http://localhost:${KEYCLOAK_PORT:-8443}
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-media-vault}
-      - KEYCLOAK_CLIENT_ID=media-vault-frontend
-      - ENVIRONMENT=${ENVIRONMENT:-development}
-      - FEATURE_AI_DESCRIPTIONS=${AI_DESCRIPTION_ENABLED:-true}
-      - FEATURE_BULK_UPLOAD=${BULK_UPLOAD_ENABLED:-true}
-      - FEATURE_PHOTO_SHARING=${PHOTO_SHARING_ENABLED:-true}
+    env_file:
+      - ./flutter_frontend/.env
     depends_on:
       - media-vault-api
       - keycloak
@@ -251,17 +149,10 @@ services:
       context: ./media-vault-admin
       dockerfile: Dockerfile
     container_name: media-vault-admin
+    env_file:
+      - ./media-vault-admin/.env
     ports:
       - "${ADMIN_PORT:-3001}:80"
-    environment:
-      - API_URL=http://media-vault-api:8080
-      - VAULT_TITLE=Media Vault Administration
-      - KEYCLOAK_URL=http://localhost:${KEYCLOAK_PORT:-8443}
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-media-vault}
-      - KEYCLOAK_CLIENT_ID=media-vault-admin
-      - ADMIN_ROLE=vault-admin
-      - MONITORING_GRAFANA_URL=http://localhost:3333
-      - MONITORING_PROMETHEUS_URL=http://localhost:9090
     depends_on:
       - media-vault-api
       - keycloak
@@ -280,12 +171,8 @@ services:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-    environment:
-      - DOMAIN=${DOMAIN:-localhost}
-      - API_SERVICE=media-vault-api:8080
-      - FRONTEND_SERVICE=flutter-web:80
-      - ADMIN_SERVICE=media-vault-admin:80
-      - KEYCLOAK_SERVICE=keycloak:8080
+    env_file:
+      - ./caddy/.env
     depends_on:
       - media-vault-api
       - flutter-web
