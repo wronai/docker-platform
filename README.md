@@ -5,7 +5,7 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/wronai/docker-platform)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
-[![Documentation](https://img.shields.io/badge/docs-📘-blueviolet)](DOCUMENTATION.md)
+[![Documentation](https://img.shields.io/badge/docs-📘-blueviolet)](docs/README.md)
 [![Project Status](https://img.shields.io/badge/status-active%20development-yellowgreen)](#project-status)
 [![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
@@ -50,7 +50,7 @@
    - Keycloak: https://auth.localhost
    - Grafana: http://localhost:3000
 
-For detailed setup and configuration, see the [Deployment Guide](/docs/DEPLOYMENT.md).
+For detailed setup and configuration, see the [Deployment Guide](docs/DEPLOYMENT.md).
 
 ## ✨ Key Features
 
@@ -148,18 +148,18 @@ Media Vault is built on a modern microservices architecture:
 - **Database**: PostgreSQL for data persistence
 - **Monitoring**: Prometheus, Grafana, and more
 
-For a complete architecture deep dive, see the [Architecture Documentation](/docs/ARCHITECTURE.md).
+For a complete architecture deep dive, see the [Architecture Documentation](docs/ARCHITECTURE.md).
 
 ## 📚 Documentation
 
 Comprehensive documentation is available in the `docs/` directory:
 
-- [📘 User Guide](/docs/USER_GUIDE.md) - End-user documentation
-- [🔧 Deployment Guide](/docs/DEPLOYMENT.md) - Setup and configuration
-- [🏗️ Architecture](/docs/ARCHITECTURE.md) - System design and components
-- [🔐 Security](/docs/SECURITY.md) - Security best practices
-- [📊 Monitoring](/docs/MONITORING.md) - Observability and alerting
-- [📝 API Reference](/docs/API.md) - API documentation
+- [📘 User Guide](docs/USER_GUIDE.md) - End-user documentation
+- [🔧 Deployment Guide](docs/DEPLOYMENT.md) - Setup and configuration
+- [🏗️ Architecture](docs/ARCHITECTURE.md) - System design and components
+- [🔐 Security](docs/SECURITY.md) - Security best practices
+- [📊 Monitoring](docs/MONITORING.md) - Observability and alerting
+- [📝 API Reference](docs/API.md) - API documentation
 
 ## 🛠️ Configuration Files
 
@@ -183,13 +183,13 @@ docker-platform/
 ├── data/                  # Persistent data
 ├── deployment/            # Deployment configurations
 ├── docs/                  # Documentation
-│   ├── [API.md](/docs/API.md)
-│   ├── [ARCHITECTURE.md](/docs/ARCHITECTURE.md)
-│   ├── [DEPLOYMENT.md](/docs/DEPLOYMENT.md)
-│   ├── [MONITORING.md](/docs/MONITORING.md)
-│   ├── [README.md](/docs/README.md)
-│   ├── [SECURITY.md](/docs/SECURITY.md)
-│   └── [USER_GUIDE.md](/docs/USER_GUIDE.md)
+│   ├── [API.md](docs/API.md)
+│   ├── [ARCHITECTURE.md](docs/ARCHITECTURE.md)
+│   ├── [DEPLOYMENT.md](docs/DEPLOYMENT.md)
+│   ├── [MONITORING.md](docs/MONITORING.md)
+│   ├── [README.md](docs/README.md)
+│   ├── [SECURITY.md](docs/SECURITY.md)
+│   └── [USER_GUIDE.md](docs/USER_GUIDE.md)
 ├── keycloak/             # Authentication service
 │   ├── themes/           # Custom UI themes
 │   └── import/           # Initial data import
@@ -386,4 +386,3 @@ If you find this project useful, please consider supporting it:
 - [GitHub Sponsors](https://github.com/sponsors/tom-sapletta-com)
 - [Open Collective](https://opencollective.com/tom-sapletta-com)
 - [PayPal](https://www.paypal.me/softreck/10.00)
-- [Donate via Softreck](https://donate.softreck.dev)
