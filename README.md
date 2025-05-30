@@ -290,3 +290,26 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - [Fiber](https://gofiber.io/) for the Go web framework
 - [Flutter](https://flutter.dev/) for the frontend
 - [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/) for monitoring
+
+## Author
+
+**Tom Sapletta** — DevOps Engineer & Systems Architect
+
+- 💻 15+ years in DevOps, Software Development, and Systems Architecture
+- 🏢 Founder & CEO at Telemonit (Portigen - edge computing power solutions)
+- 🌍 Based in Germany | Open to remote collaboration
+- 📚 Passionate about edge computing, hypermodularization, and automated SDLC
+
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/tom-sapletta-com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?logo=linkedin&logoColor=white)](https://linkedin.com/in/tom-sapletta-com)
+[![ORCID](https://img.shields.io/badge/ORCID-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0000-6327-2810)
+[![Portfolio](https://img.shields.io/badge/Portfolio-000000?style=flat&logo=about.me&logoColor=white)](https://www.digitname.com/)
+
+## Support This Project
+
+If you find this project useful, please consider supporting it:
+
+- [GitHub Sponsors](https://github.com/sponsors/tom-sapletta-com)
+- [Open Collective](https://opencollective.com/tom-sapletta-com)
+- [PayPal](https://www.paypal.me/softreck/10.00)
+- [Donate via Softreck](https://donate.softreck.dev)
