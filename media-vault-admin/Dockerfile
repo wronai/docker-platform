@@ -1,43 +1,31 @@
-# Stage 1: Build the Flutter web app
-FROM debian:bullseye-slim AS build-env
-
-# Install required tools
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    unzip \
-    xz-utils \
-    zip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Clone the Flutter repository
-RUN git clone --depth 1 --branch stable https://github.com/flutter/flutter.git /usr/local/flutter
-
-# Add Flutter to PATH
-ENV PATH="${PATH}:/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin"
-
-# Enable web development
-RUN flutter doctor -v
-RUN flutter config --enable-web
-
-# Copy the source code
-WORKDIR /app
-COPY . .
-
-# Get dependencies
-RUN flutter pub get
-
-# Build the web app
-RUN flutter build web --release --web-renderer html
-
-# Stage 2: Serve the built web app with Nginx
+# Use nginx to serve static files
 FROM nginx:alpine
 
-# Copy the built web app
-COPY --from=build-env /app/build/web /usr/share/nginx/html
+# Create config directory
+RUN mkdir -p /usr/share/nginx/html/config
+
+# Copy the configuration file
+COPY config/admin-config.js /usr/share/nginx/html/config/
+
+# Copy the static files to the nginx web root
+COPY src/ /usr/share/nginx/html/
 
 # Copy the nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Set environment variables for the admin interface
+ENV API_URL=http://media-vault-api:8080 \
+    KEYCLOAK_URL=http://keycloak:8080 \
+    KEYCLOAK_REALM=media-vault \
+    KEYCLOAK_CLIENT_ID=media-vault-admin \
+    ADMIN_ROLE=vault-admin \
+    VAULT_TITLE="Media Vault Admin" \
+    MONITORING_GRAFANA_URL=http://grafana:3000 \
+    MONITORING_PROMETHEUS_URL=http://prometheus:9090
+
+# Replace environment variables in the config file
+RUN envsubst < /usr/share/nginx/html/config/admin-config.js > /usr/share/nginx/html/config/admin-config.tmp.js && \
+    mv /usr/share/nginx/html/config/admin-config.tmp.js /usr/share/nginx/html/config/admin-config.js
 
 # Expose port 80
 EXPOSE 80
