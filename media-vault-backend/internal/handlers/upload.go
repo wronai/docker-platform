@@ -59,7 +59,7 @@ func (h *UploadHandler) UploadSingle(c *fiber.Ctx) error {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "No file uploaded",
+			"error": "No file uploaded: " + err.Error(),
 		})
 	}
 
@@ -81,47 +81,30 @@ func (h *UploadHandler) UploadSingle(c *fiber.Ctx) error {
 		".jpeg": true,
 		".png":  true,
 		".gif":  true,
+		".webp": true,
 	}
 
 	if !allowedTypes[ext] {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid file type. Only JPG, JPEG, PNG, and GIF are allowed",
+			"error": "Invalid file type. Only JPG, JPEG, PNG, GIF, and WebP are allowed",
 		})
 	}
 
+	// Prepare metadata
+	metadata := make(map[string]interface{})
+	if description != "" {
+		metadata["description"] = description
+	}
+	if tags != "" {
+		metadata["tags"] = tags
+	}
+
 	// Upload the file
-	photo, err := h.photoService.UploadPhoto(c.Context(), fileHeader, userID, "")
+	photo, err := h.photoService.UploadPhoto(c.Context(), userID, fileHeader, metadata)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to upload file: " + err.Error(),
 		})
-	}
-
-	// Update photo with additional metadata if provided
-	if description != "" || tags != "" {
-		updateData := map[string]interface{}{
-			"description": description,
-		}
-
-		if tags != "" {
-			updateData["tags"] = tags
-		}
-
-		_, err = h.photoService.UpdatePhoto(c.Context(), photo.ID, updateData)
-		if err != nil {
-			// Log the error but don't fail the request
-			log.Printf("Failed to update photo metadata: %v", err)
-		}
-
-		// Update the photo object with the new data
-		if description != "" {
-			desc := description
-			photo.Description = &desc
-		}
-		if tags != "" {
-			tagsStr := tags
-			photo.Tags = &tagsStr
-		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(photo)

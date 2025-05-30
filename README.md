@@ -2,15 +2,6 @@
 
 **Enterprise-grade secure media storage with AI analysis, role-based access, and comprehensive monitoring.**
 
-
-## 🙏 Acknowledgments
-
-- [Docker](https://www.docker.com/)
-- [Keycloak](https://www.keycloak.org/)
-- [Prometheus](https://prometheus.io/)
-- [Grafana](https://grafana.com/)
-- [Flutter](https://flutter.dev/)
-
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/wronai/docker-platform)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
@@ -18,50 +9,28 @@
 [![Project Status](https://img.shields.io/badge/status-active%20development-yellowgreen)](#project-status)
 [![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-## 📋 Table of Contents
-- [🚀 Quick Start](#-quick-start)
-  - [Prerequisites](#-prerequisites)
-  - [Deployment](#-deployment)
-  - [Accessing Services](#-accessing-services)
-- [✨ Key Features](#-key-features)
-- [🔑 Key Files](#-key-files)
-- [🏗️ Architecture Overview](#-architecture-overview)
-- [🛠️ Configuration Files](#-configuration-files)
-  - [Docker Compose Files](#docker-compose-files)
-  - [Environment Configuration](#environment-configuration)
-- [📂 Project Structure](#-project-structure)
-- [🔄 Development Workflow](#-development-workflow)
-- [🧪 Testing](#-testing)
-  - [Run Tests](#run-tests)
-- [📚 Documentation](#-documentation)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [🙏 Acknowledgments](#-acknowledgments)
-
 ## 🚀 Quick Start
 
-1. **Prerequisites**:
-   - Docker 20.10+ and Docker Compose
-   - 4GB RAM minimum (8GB recommended)
-   - Ports 80, 443, 8080, 3000 available
+### Prerequisites
+- Docker 20.10+ and Docker Compose
+- 4GB RAM minimum (8GB recommended)
+- Ports 80, 443, 8080, 3000 available
 
-2. **Deploy the stack**:
-   ```bash
-   git clone https://github.com/wronai/docker-platform.git
-   cd docker-platform
-   cp .env.example .env
-   make up
-   ```
+### Deployment
+```bash
+git clone https://github.com/wronai/docker-platform.git
+cd docker-platform
+cp .env.example .env
+make up
+```
 
-3. **Access the applications**:
-   - Web UI: https://localhost
-   - Admin Panel: https://admin.localhost
-   - Keycloak: https://auth.localhost
-   - Grafana: http://localhost:3000
+### Accessing Services
+- Web UI: https://localhost
+- Admin Panel: https://admin.localhost
+- Keycloak: https://auth.localhost
+- Grafana: http://localhost:3000
 
-For detailed setup and configuration, see the [Deployment Guide](docs/DEPLOYMENT.md).
-
-## 🌟 Key Features
+## ✨ Key Features
 
 - **Secure File Storage**: End-to-end encrypted media storage
 - **AI-Powered Analysis**: Automatic media tagging and description
@@ -91,37 +60,86 @@ For detailed setup and configuration, see the [Deployment Guide](docs/DEPLOYMENT
 - System health monitoring
 - Backup and recovery
 
-## 🚀 Quick Start
+## 📂 Project Structure
+
+```
+docker-platform/
+├── ansible/               # Infrastructure as Code
+│   └── README.md
+├── caddy/                 # Reverse proxy configuration
+├── data/                  # Persistent data
+├── deployment/            # Deployment configurations
+├── docs/                  # Documentation
+│   ├── API.md
+│   ├── ARCHITECTURE.md
+│   ├── DEPLOYMENT.md
+│   ├── MONITORING.md
+│   ├── README.md
+│   ├── SECURITY.md
+│   └── USER_GUIDE.md
+├── keycloak/             # Authentication service
+│   ├── themes/           # Custom UI themes
+│   └── import/           # Initial data import
+└── scripts/              # Utility scripts
+```
+
+## 🛠️ Configuration
+
+### Environment Variables
+Copy the example environment file and update as needed:
+```bash
+cp .env.example .env
+```
+
+### Docker Compose Files
+- `docker-compose.yml` - Main services
+- `docker-compose.monitoring.yml` - Monitoring stack
+- `docker-compose.infrastructure.yml` - Infrastructure services
+- `docker-compose.automation.yml` - Automation tools
+
+## 🚧 Development
 
 ### Prerequisites
-- Docker 20.10+ and Docker Compose
-- 4GB RAM minimum (8GB recommended)
-- Ports 80, 443, 8080, 3000 available
+- Go 1.21+
+- Node.js 18+
+- Flutter 3.10+
 
-### Local Development Setup
+### Setup
+```bash
+make install-deps
+make build
+make up
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/wronai/docker-platform.git
-   cd docker-platform
-   ```
+### Testing
+```bash
+make test
+make test-e2e
+```
 
-2. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env file if needed
-   ```
+## 📚 Documentation
 
-3. **Start services**
-   ```bash
-   make up
-   ```
+- [Architecture](docs/ARCHITECTURE.md)
+- [API Reference](docs/API.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+- [Security](docs/SECURITY.md)
+- [User Guide](docs/USER_GUIDE.md)
 
-4. **Access the applications**
-   - Web UI: https://localhost
-   - Admin Panel: https://admin.localhost
-   - Keycloak: https://auth.localhost
-   - Grafana: http://localhost:3000
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## 📄 License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Docker](https://www.docker.com/)
+- [Keycloak](https://www.keycloak.org/)
+- [Prometheus](https://prometheus.io/)
+- [Grafana](https://grafana.com/)
+- [Flutter](https://flutter.dev/)
 
 ## 🏗️ Architecture Overview
 
