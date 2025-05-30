@@ -57,8 +57,8 @@ RUN apk add --no-cache \
     py3-pip \
     docker-compose
 
-# Install Go linter
-RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+# Install Go linter compatible with Go 1.21.10
+RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
 
 # Set working directory
 WORKDIR /app
