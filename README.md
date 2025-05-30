@@ -2,6 +2,151 @@
 
 **Enterprise-grade secure media storage with AI analysis, role-based access, and comprehensive monitoring.**
 
+## 🌟 Key Features
+
+- **Secure File Storage**: End-to-end encrypted media storage
+- **AI-Powered Analysis**: Automatic media tagging and description
+- **Role-Based Access Control**: Fine-grained permissions system
+- **Real-time Collaboration**: Share and collaborate on media assets
+- **Comprehensive Monitoring**: Built-in observability and analytics
+- **Scalable Architecture**: Containerized microservices
+- **Self-Hosted**: Full control over your data
+
+## 👥 User Roles
+
+### End User
+- Upload and manage personal media
+- Generate AI descriptions
+- Share media with others
+- View personal analytics
+
+### Partner User
+- All End User capabilities
+- Access to shared partner content
+- Team collaboration features
+- Advanced analytics
+
+### Administrator
+- System configuration
+- User and role management
+- System health monitoring
+- Backup and recovery
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker 20.10+ and Docker Compose
+- 4GB RAM minimum (8GB recommended)
+- Ports 80, 443, 8080, 3000 available
+
+### Local Development Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/wronai/docker-platform.git
+   cd docker-platform
+   ```
+
+2. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env file if needed
+   ```
+
+3. **Start services**
+   ```bash
+   make up
+   ```
+
+4. **Access the applications**
+   - Web UI: https://localhost
+   - Admin Panel: https://admin.localhost
+   - Keycloak: https://auth.localhost
+   - Grafana: http://localhost:3000
+
+## 🏗️ Architecture Overview
+
+Media Vault is built using a microservices architecture with the following components:
+
+### Core Services
+- **Frontend**: Flutter-based web interface
+- **API Gateway**: Request routing and authentication
+- **Media Service**: File processing and storage
+- **Metadata Service**: Media metadata management
+- **AI Service**: Media analysis and description
+- **Auth Service**: User authentication and authorization
+
+### Data Storage
+- **PostgreSQL**: Relational data
+- **Object Storage**: Media files
+- **Redis**: Caching and sessions
+
+### Infrastructure
+- **Docker & Docker Compose**: Containerization
+- **Caddy**: Reverse proxy with automatic HTTPS
+- **Keycloak**: Identity and access management
+- **Monitoring**: Prometheus, Grafana, Loki
+
+## 🔧 Development
+
+### Prerequisites
+- Go 1.21+
+- Node.js 18+
+- Docker & Docker Compose
+
+### Setup Development Environment
+
+1. **Start dependencies**
+   ```bash
+   make dev-deps
+   ```
+
+2. **Run database migrations**
+   ```bash
+   make migrate
+   ```
+
+3. **Start development servers**
+   ```bash
+   make dev
+   ```
+
+## 🧪 Testing
+
+Run unit tests:
+```bash
+make test
+```
+
+Run integration tests:
+```bash
+make test-integration
+```
+
+## 📚 Documentation
+
+- [Architecture](./docs/ARCHITECTURE.md): System design and components
+- [API Reference](./docs/API.md): Detailed API documentation
+- [Deployment Guide](./docs/DEPLOYMENT.md): Production deployment instructions
+- [User Guide](./docs/USER_GUIDE.md): End-user documentation
+- [Security](./docs/SECURITY.md): Security best practices
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Docker](https://www.docker.com/)
+- [Keycloak](https://www.keycloak.org/)
+- [Prometheus](https://prometheus.io/)
+- [Grafana](https://grafana.com/)
+- [Flutter](https://flutter.dev/)
+
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/wronai/docker-platform)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
@@ -178,18 +323,18 @@ Comprehensive documentation is available in the `docs/` directory:
 ```
 docker-platform/
 ├── ansible/               # Infrastructure as Code
-│   └── [README.md](ansible/README.md)
+│   └── README.md
 ├── caddy/                 # Reverse proxy configuration
 ├── data/                  # Persistent data
 ├── deployment/            # Deployment configurations
 ├── docs/                  # Documentation
-│   ├── [API.md](docs/API.md)
-│   ├── [ARCHITECTURE.md](docs/ARCHITECTURE.md)
-│   ├── [DEPLOYMENT.md](docs/DEPLOYMENT.md)
-│   ├── [MONITORING.md](docs/MONITORING.md)
-│   ├── [README.md](docs/README.md)
-│   ├── [SECURITY.md](docs/SECURITY.md)
-│   └── [USER_GUIDE.md](docs/USER_GUIDE.md)
+│   ├── API.md
+│   ├── ARCHITECTURE.md
+│   ├── DEPLOYMENT.md
+│   ├── MONITORING.md
+│   ├── README.md
+│   ├── SECURITY.md
+│   └── USER_GUIDE.md
 ├── keycloak/             # Authentication service
 │   ├── themes/           # Custom UI themes
 │   └── import/           # Initial data import

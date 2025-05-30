@@ -54,13 +54,17 @@ func (h *PhotoHandler) GetPhoto(c *fiber.Ctx) error {
 	photo, err := h.photoService.GetPhoto(c.Context(), photoID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "Photo not found",
+			"error": "Photo not found: " + err.Error(),
 		})
 	}
 
 	// Check if user has permission to view this photo
-	// (Implementation depends on your auth system)
-
+	userID := c.Locals("userID").(string)
+	if photo.UserID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "You don't have permission to view this photo",
+		})
+	}
 
 	return c.JSON(photo)
 }
@@ -100,21 +104,26 @@ func (h *PhotoHandler) UpdatePhoto(c *fiber.Ctx) error {
 	}
 
 	// Parse request body
-	var updateData map[string]interface{}
-	if err := c.BodyParser(&updateData); err != nil {
+	var updates map[string]interface{}
+	if err := c.BodyParser(&updates); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body: " + err.Error(),
 		})
 	}
 
-	// Get user ID from context
-	userID := c.Locals("userID").(string)
-
-	// Update the photo
-	photo, err := h.photoService.UpdatePhoto(c.Context(), userID, photoID, updateData)
+	// Update photo
+	photo, err := h.photoService.UpdatePhoto(c.Context(), photoID, updates)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update photo: " + err.Error(),
+		})
+	}
+
+	// Verify ownership
+	userID := c.Locals("userID").(string)
+	if photo.UserID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "You don't have permission to update this photo",
 		})
 	}
 
@@ -130,18 +139,31 @@ func (h *PhotoHandler) DeletePhoto(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get user ID from context
+	// First get the photo to verify ownership
+	photo, err := h.photoService.GetPhoto(c.Context(), photoID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Photo not found: " + err.Error(),
+		})
+	}
+
+	// Verify ownership
 	userID := c.Locals("userID").(string)
+	if photo.UserID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "You don't have permission to delete this photo",
+		})
+	}
 
 	// Delete the photo
-	err := h.photoService.DeletePhoto(c.Context(), userID, photoID)
+	err = h.photoService.DeletePhoto(c.Context(), photoID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to delete photo: " + err.Error(),
 		})
 	}
 
-	return c.SendStatus(fiber.StatusNoContent)
+	return c.Status(fiber.StatusNoContent).Send(nil)
 }
 
 // GetThumbnail handles retrieving a photo's thumbnail
