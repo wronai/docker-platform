@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Vault Project Explorer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <style>
+        body { padding: 20px; }
+        #file-explorer { max-height: 80vh; overflow-y: auto; }
+        #file-content { padding: 20px; border-left: 1px solid #ddd; }
+        .file-item { cursor: pointer; padding: 5px; }
+        .file-item:hover { background-color: #f8f9fa; }
+        .dir-item { font-weight: bold; }
+        .markdown-body { max-width: 800px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Project Explorer</h2>
+                <div id="file-explorer" class="list-group">
+                    <!-- Files will be loaded here -->
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div id="file-content" class="markdown-body">
+                    <h1>Media Vault Project</h1>
+                    <p>Select a file from the explorer to view its contents.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.2.12/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>
+        // Initialize highlight.js
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get project files
+            fetch('/api/project-files')
+                .then(response => response.json())
+                .then(files => {
+                    displayFiles(files);
+                })
+                .catch(error => {
+                    console.error('Error loading project files:', error);
+                    document.getElementById('file-explorer').innerHTML = 
+                        '<div class="alert alert-danger">Error loading project files. Make sure to run this with a local server.</div>';
+                });
+        });
+
+        // Display files in the explorer
+        function displayFiles(files, path = '') {
+            const explorer = document.getElementById('file-explorer');
+            explorer.innerHTML = '';
+
+            // Add parent directory link if not in root
+            if (path) {
+                const parentPath = path.split('/').slice(0, -1).join('/');
+                const parentItem = document.createElement('div');
+                parentItem.className = 'list-group-item file-item';
+                parentItem.innerHTML = '📁 ..';
+                parentItem.onclick = () => loadDirectory(parentPath);
+                explorer.appendChild(parentItem);
+            }
+
+            // Add directories first
+            files.dirs.forEach(dir => {
+                const dirItem = document.createElement('div');
+                dirItem.className = 'list-group-item file-item dir-item';
+                dirItem.innerHTML = `📁 ${dir.name}`;
+                dirItem.onclick = () => loadDirectory(dir.path);
+                explorer.appendChild(dirItem);
+            });
+
+            // Then add files
+            files.files.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'list-group-item file-item';
+                fileItem.innerHTML = `📄 ${file.name}`;
+                fileItem.onclick = () => loadFile(file.path);
+                explorer.appendChild(fileItem);
+            });
+        }
+
+        // Load directory contents
+        function loadDirectory(path) {
+            fetch(`/api/project-files?path=${encodeURIComponent(path)}`)
+                .then(response => response.json())
+                .then(files => {
+                    displayFiles(files, path);
+                    document.getElementById('file-content').innerHTML = 
+                        `<h2>${path || 'Project Root'}</h2><p>Select a file to view its contents.</p>`;
+                });
+        }
+
+        // Load and display file content
+        function loadFile(path) {
+            fetch(`/api/file-content?path=${encodeURIComponent(path)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const contentDiv = document.getElementById('file-content');
+                    if (path.endsWith('.md')) {
+                        // Render markdown
+                        contentDiv.innerHTML = marked.parse(data.content);
+                        // Apply syntax highlighting
+                        document.querySelectorAll('pre code').forEach((block) => {
+                            hljs.highlightElement(block);
+                        });
+                    } else {
+                        // Display raw content with syntax highlighting
+                        const pre = document.createElement('pre');
+                        const code = document.createElement('code');
+                        code.className = path.split('.').pop();
+                        code.textContent = data.content;
+                        pre.appendChild(code);
+                        contentDiv.innerHTML = `<h3>${path}</h3>`;
+                        contentDiv.appendChild(pre);
+                        hljs.highlightElement(code);
+                    }
+                });
+        }
+    </script>
+</body>
+</html>
