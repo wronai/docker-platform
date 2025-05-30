@@ -7,14 +7,26 @@
 [![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
 [![Documentation](https://img.shields.io/badge/docs-📘-blueviolet)](docs/README.md)
 [![Project Status](https://img.shields.io/badge/status-active%20development-yellowgreen)](#project-status)
+[![Contributing](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ## 📋 Table of Contents
 - [🚀 Quick Start](#-quick-start)
+  - [Prerequisites](#-prerequisites)
+  - [Deployment](#-deployment)
+  - [Accessing Services](#-accessing-services)
 - [✨ Key Features](#-key-features)
 - [🏗️ Architecture Overview](#-architecture-overview)
+- [🛠️ Configuration Files](#-configuration-files)
+  - [Docker Compose Files](#docker-compose-files)
+  - [Environment Configuration](#environment-configuration)
+- [📂 Project Structure](#-project-structure)
+- [🔄 Development Workflow](#-development-workflow)
+- [🧪 Testing](#-testing)
+  - [Run Tests](#run-tests)
 - [📚 Documentation](#-documentation)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
+- [🙏 Acknowledgments](#-acknowledgments)
 
 ## 🚀 Quick Start
 
@@ -70,6 +82,86 @@ Comprehensive documentation is available in the `docs/` directory:
 - [📊 Monitoring](docs/MONITORING.md) - Observability and alerting
 - [📝 API Reference](docs/API.md) - API documentation
 
+## 🛠️ Configuration Files
+
+### Docker Compose Files
+- [docker-compose.yml](docker-compose.yml) - Main services configuration
+- [docker-compose.monitoring.yml](docker-compose.monitoring.yml) - Monitoring stack
+- [docker-compose.infrastructure.yml](docker-compose.infrastructure.yml) - Infrastructure services
+- [docker-compose.automation.yml](docker-compose.automation.yml) - Automation and CI/CD tools
+
+### Environment Configuration
+- [.env.example](.env.example) - Example environment variables
+- [.env](.env) - Your local environment configuration (create from .env.example)
+
+## 📂 Project Structure
+
+```
+docker-platform/
+├── ansible/               # Infrastructure as Code
+│   └── [README.md](ansible/README.md)
+├── caddy/                 # Reverse proxy configuration
+├── data/                  # Persistent data
+├── deployment/            # Deployment configurations
+├── docs/                  # Documentation
+│   ├── [API.md](docs/API.md)
+│   ├── [ARCHITECTURE.md](docs/ARCHITECTURE.md)
+│   ├── [DEPLOYMENT.md](docs/DEPLOYMENT.md)
+│   ├── [MONITORING.md](docs/MONITORING.md)
+│   ├── [README.md](docs/README.md)
+│   ├── [SECURITY.md](docs/SECURITY.md)
+│   └── [USER_GUIDE.md](docs/USER_GUIDE.md)
+├── keycloak/             # Authentication service
+│   ├── themes/           # Custom UI themes
+│   └── import/           # Initial data import
+└── scripts/              # Utility scripts
+```
+
+## 🔄 Development Workflow
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/wronai/docker-platform.git
+   cd docker-platform
+   ```
+
+2. **Set up environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. **Start services**
+   ```bash
+   make up
+   ```
+
+4. **Access applications**
+   - Web UI: http://localhost:3000
+   - API: http://localhost:8080
+   - Monitoring: http://localhost:9090
+   - Documentation: http://localhost:8080/docs
+
+## 🧪 Testing
+
+### Run Tests
+```bash
+# Run all tests
+make test
+
+# Run backend tests
+make test-backend
+
+# Run frontend tests
+make test-frontend
+
+# Run linters
+make lint
+
+# Check code coverage
+make coverage
+```
+
 ## 🤝 Contributing
 
 We welcome contributions from the community! Here's how you can help:
@@ -84,11 +176,19 @@ Please read our [Contributing Guide](CONTRIBUTING.md) for development setup and 
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
+## 🙏 Acknowledgments
+
+- [Keycloak](https://www.keycloak.org/) for authentication
+- [Docker](https://www.docker.com/) for containerization
+- [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/) for monitoring
+- All our amazing contributors and users!
+
 ---
 
 <div align="center">
   <p>Made with ❤️ by the Media Vault Team</p>
   <p>For support, please open an issue or contact support@wron.ai</p>
+  <p>📅 Last updated: May 2023</p>
 </div>
 # Run linters
 make lint

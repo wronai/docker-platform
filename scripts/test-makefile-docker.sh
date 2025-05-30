@@ -100,8 +100,13 @@ RUN apk add --no-cache \
 # Install Go linter compatible with Go 1.21.10
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
 
-# Install Ansible and dependencies
-RUN pip3 install --no-cache-dir ansible ansible-lint docker && \
+# Create and activate virtual environment for Python packages
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Ansible and dependencies in the virtual environment
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir ansible ansible-lint docker && \
     ansible --version && \
     ansible-lint --version
 
