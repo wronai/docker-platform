@@ -43,14 +43,14 @@ services:
       KEYCLOAK_HTTP_PORT: 8080
       KEYCLOAK_HTTPS_PORT: 8443
       KEYCLOAK_PROXY: edge
-      KEYCLOAK_ENABLE_HTTPS: "yes"
-      KEYCLOAK_ENABLE_STATISTICS: "true"
-      KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: "true"
+      KEYCLOAK_ENABLE_HTTPS: "false"  # Disable HTTPS as we're behind a reverse proxy
+      KEYCLOAK_ENABLE_STATISTICS: true
+      KEYCLOAK_ENABLE_HEALTH_ENDPOINTS: true
       
       # Host configuration
       KEYCLOAK_HOSTNAME: ${KC_HOSTNAME:-localhost}
-      KEYCLOAK_HOSTNAME_STRICT: "false"
-      KEYCLOAK_HOSTNAME_STRICT_HTTPS: "false"
+      KEYCLOAK_HOSTNAME_STRICT: false
+      KEYCLOAK_HOSTNAME_STRICT_HTTPS: false
       
       # JVM settings
       KEYCLOAK_JAVA_OPTS: "-Xms512m -Xmx1024m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true"
