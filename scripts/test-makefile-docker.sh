@@ -40,6 +40,44 @@ fi
 # Copy docker-compose files
 cp -r docker-compose* "${TEMP_DIR}/" 2>/dev/null || true
 
+# Copy Ansible files if they exist
+if [ -d "ansible" ]; then
+    echo -e "${YELLOW}📦 Copying Ansible files...${NC}"
+    mkdir -p "${TEMP_DIR}/ansible"
+    cp -r ansible/* "${TEMP_DIR}/ansible/"
+    
+    # Create a test inventory file
+    cat > "${TEMP_DIR}/ansible/inventory.ini" << 'EOL'
+[local]
+localhost ansible_connection=local
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+EOL
+    
+    # Create a test playbook if none exists
+    if [ ! -f "${TEMP_DIR}/ansible/playbook.yml" ]; then
+        cat > "${TEMP_DIR}/ansible/playbook.yml" << 'EOL'
+---
+- name: Test Playbook
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  become: no
+
+  tasks:
+    - name: Check Docker is running
+      command: docker info
+      register: docker_info
+      changed_when: false
+
+    - name: Print Docker info
+      debug:
+        var: docker_info.stdout_lines
+EOL
+    fi
+fi
+
 # Create a test Dockerfile
 cat > "${TEMP_DIR}/Dockerfile.test" << 'EOL'
 FROM docker:24.0.7-cli
@@ -55,10 +93,17 @@ RUN apk add --no-cache \
     npm \
     python3 \
     py3-pip \
-    docker-compose
+    docker-compose \
+    openssh-client \
+    sshpass
 
 # Install Go linter compatible with Go 1.21.10
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
+
+# Install Ansible and dependencies
+RUN pip3 install --no-cache-dir ansible ansible-lint docker && \
+    ansible --version && \
+    ansible-lint --version
 
 # Set working directory
 WORKDIR /app
@@ -71,6 +116,62 @@ EOL
 # Build test image
 echo -e "${YELLOW}🐳 Building test Docker image...${NC}"
 docker build -t makefile-test -f "${TEMP_DIR}/Dockerfile.test" "${TEMP_DIR}"
+
+# Function to test Ansible playbook
+test_ansible_playbook() {
+    if [ ! -d "${TEMP_DIR}/ansible" ]; then
+        echo -e "${YELLOW}ℹ️  No Ansible directory found, skipping Ansible tests${NC}"
+        return 0
+    fi
+    
+    local failed=0
+    
+    echo -e "\n${YELLOW}🔍 Testing Ansible playbook...${NC}"
+    echo "--------------------------------------------------"
+    
+    # Test playbook syntax
+    echo -e "${YELLOW}🔧 Checking playbook syntax...${NC}"
+    if ! docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "${TEMP_DIR}/ansible:/ansible" \
+        -w /ansible \
+        makefile-test \
+        ansible-playbook -i inventory.ini --syntax-check playbook.yml; then
+        echo -e "${RED}❌ Ansible playbook syntax check failed${NC}"
+        ((failed++))
+    else
+        echo -e "${GREEN}✅ Ansible playbook syntax check passed${NC}"
+    fi
+    
+    # Lint the playbook
+    echo -e "\n${YELLOW}🔍 Linting playbook...${NC}"
+    if ! docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "${TEMP_DIR}/ansible:/ansible" \
+        -w /ansible \
+        makefile-test \
+        ansible-lint playbook.yml; then
+        echo -e "${YELLOW}⚠️  Ansible linting found issues (non-fatal)${NC}"
+    else
+        echo -e "${GREEN}✅ Ansible linting passed${NC}"
+    fi
+    
+    # Run the playbook in check mode
+    echo -e "\n${YELLOW}🔍 Running playbook in check mode...${NC}"
+    if ! docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "${TEMP_DIR}/ansible:/ansible" \
+        -w /ansible \
+        makefile-test \
+        ansible-playbook -i inventory.ini --check playbook.yml; then
+        echo -e "${RED}❌ Ansible playbook check mode failed${NC}"
+        ((failed++))
+    else
+        echo -e "${GREEN}✅ Ansible playbook check mode passed${NC}"
+    fi
+    
+    return $failed
+}
 
 # Function to run a make target and check its status
 run_make_target() {
@@ -123,6 +224,15 @@ run_tests() {
         fi
         ((total_tests++))
     done
+    
+    # Test Ansible playbook if it exists
+    if [ -d "${TEMP_DIR}/ansible" ]; then
+        echo -e "\n${YELLOW}🔍 Running Ansible tests...${NC}"
+        ((total_tests++))
+        if ! test_ansible_playbook; then
+            ((failed_tests++))
+        fi
+    fi
     
     # Print summary
     echo -e "\n${YELLOW}📊 Test Summary:${NC}"
