@@ -15,6 +15,7 @@
   - [Deployment](#-deployment)
   - [Accessing Services](#-accessing-services)
 - [✨ Key Features](#-key-features)
+- [🔑 Key Files](#-key-files)
 - [🏗️ Architecture Overview](#-architecture-overview)
 - [🛠️ Configuration Files](#-configuration-files)
   - [Docker Compose Files](#docker-compose-files)
@@ -58,6 +59,84 @@ For detailed setup and configuration, see the [Deployment Guide](docs/DEPLOYMENT
 - **AI Analysis**: Automatic content moderation and tagging
 - **High Availability**: Designed for 99.9% uptime
 - **Comprehensive Monitoring**: Built-in observability stack
+
+## 🔑 Key Files
+
+### Backend Services
+
+#### Core Components
+- [Main Backend Service](/media-vault-backend/) - Core API and business logic
+  - [Dockerfile](/media-vault-backend/Dockerfile) - Backend service container definition
+  - [go.mod](/media-vault-backend/go.mod) - Go module and dependencies
+  - [main.go](/media-vault-backend/cmd/main.go) - Application entry point
+
+#### Internal Packages
+- [internal/auth/](/media-vault-backend/internal/auth/) - Authentication and authorization
+  - [roles.go](/media-vault-backend/internal/auth/roles.go) - Role definitions and permissions
+  - [middleware.go](/media-vault-backend/internal/auth/middleware.go) - Authentication middleware
+
+- [internal/handlers/](/media-vault-backend/internal/handlers/) - HTTP request handlers
+  - [vault.go](/media-vault-backend/internal/handlers/vault.go) - Media vault operations
+  - [photos.go](/media-vault-backend/internal/handlers/photos.go) - Photo management
+  - [upload.go](/media-vault-backend/internal/handlers/upload.go) - File upload handling
+
+- [internal/models/](/media-vault-backend/internal/models/) - Data models
+  - [media.go](/media-vault-backend/internal/models/media.go) - Media file model
+  - [description.go](/media-vault-backend/internal/models/description.go) - AI-generated descriptions
+  - [photo.go](/media-vault-backend/internal/models/photo.go) - Photo metadata
+
+- [internal/services/](/media-vault-backend/internal/services/) - Business logic
+  - [vault_service.go](/media-vault-backend/internal/services/vault_service.go) - Media vault operations
+  - [photo_service.go](/media-vault-backend/internal/services/photo_service.go) - Photo processing
+  - [sharing_service.go](/media-vault-backend/internal/services/sharing_service.go) - Media sharing logic
+
+### Configuration
+- [docker-compose.yml](/docker-compose.yml) - Main Docker Compose configuration
+- [.env.example](/.env.example) - Example environment configuration
+- [Makefile](/Makefile) - Common development commands
+- [scripts/](/scripts/) - Utility scripts for development and deployment
+
+### Development Workflow
+
+#### Prerequisites
+- Docker and Docker Compose
+- Go 1.21+
+- Node.js 18+ (for frontend development)
+
+#### Common Tasks
+
+**Starting the development environment:**
+```bash
+make dev-up
+```
+
+**Running tests:**
+```bash
+make test
+```
+
+**Building the application:**
+```bash
+make build
+```
+
+**Viewing logs:**
+```bash
+make logs
+```
+
+#### Scripts
+- [scripts/dev.sh](/scripts/dev.sh) - Development environment setup
+- [scripts/test.sh](/scripts/test.sh) - Test runner
+- [scripts/deploy.sh](/scripts/deploy.sh) - Deployment script
+- [scripts/backup.sh](/scripts/backup.sh) - Database backup
+
+### Documentation
+- [docs/](/docs/) - Comprehensive documentation
+  - [API.md](/docs/API.md) - API reference
+  - [ARCHITECTURE.md](/docs/ARCHITECTURE.md) - System architecture
+  - [DEPLOYMENT.md](/docs/DEPLOYMENT.md) - Deployment guide
+  - [SECURITY.md](/docs/SECURITY.md) - Security best practices
 
 ## 🏗️ Architecture Overview
 
