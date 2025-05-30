@@ -285,9 +285,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"media-vault/internal/auth"
-	"media-vault/internal/models"
-	"media-vault/internal/services"
+	"github.com/wronai/media-vault-backend/internal/auth"
+	"github.com/wronai/media-vault-backend/internal/models"
+	"github.com/wronai/media-vault-backend/internal/services"
 )
 
 type PartnerHandler struct {
@@ -613,8 +613,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"media-vault/internal/models"
-	"media-vault/internal/utils"
+	"github.com/wronai/media-vault-backend/internal/models"
+	"github.com/wronai/media-vault-backend/internal/utils"
 )
 
 type PhotoService struct {

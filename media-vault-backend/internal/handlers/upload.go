@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/gofiber/fiber/v2"
-	"media-vault/internal/models"
-	"media-vault/internal/services"
+	"github.com/wronai/media-vault-backend/internal/models"
+	"github.com/wronai/media-vault-backend/internal/services"
 )
 
 // UploadHandler handles file uploads

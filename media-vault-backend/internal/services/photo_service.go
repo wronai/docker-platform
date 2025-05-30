@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"mime/multipart"
 	"time"
-	"media-vault/internal/models"
+	"github.com/wronai/media-vault-backend/internal/models"
 )
 
 type PhotoService struct {

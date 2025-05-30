@@ -62,7 +62,7 @@ dev: up ## Start development environment
 
 watch-backend: ## Watch backend for changes and rebuild
 	@echo "${GREEN}👀 Watching backend for changes...${RESET}"
-	docker-compose -f docker-compose.dev.yml up backend
+	docker-compose -f docker-compose.dev.yml up media-vault-api
 
 watch-frontend: ## Watch frontend for changes and rebuild
 	@echo "${GREEN}👀 Watching frontend for changes...${RESET}"
@@ -72,8 +72,8 @@ watch-frontend: ## Watch frontend for changes and rebuild
 test: test-unit test-integration ## Run all tests
 
 test-unit: ## Run unit tests
-	@echo "${GREEN}🧪 Running unit tests...${RESET}"
-	docker-compose run --rm backend go test -v ./... -short
+	@echo "🧪 Running unit tests..."
+	docker-compose run --rm media-vault-api go test -v ./... -short
 
 test-integration: ## Run integration tests
 	@echo "${GREEN}🧪 Running integration tests...${RESET}"
@@ -85,17 +85,17 @@ test-e2e: ## Run end-to-end tests
 
 coverage: ## Generate test coverage report
 	@echo "${GREEN}📊 Generating test coverage...${RESET}"
-	docker-compose run --rm backend go test -coverprofile=coverage.out ./...
-	docker-compose run --rm backend go tool cover -html=coverage.out -o coverage.html
+	docker-compose run --rm media-vault-api go test -coverprofile=coverage.out ./...
+	docker-compose run --rm media-vault-api go tool cover -html=coverage.out -o coverage.html
 
 ## Code Quality
 lint: ## Run linters
 	@echo "${GREEN}🔍 Running linters...${RESET}"
-	docker-compose run --rm backend golangci-lint run
+	docker-compose run --rm media-vault-api golangci-lint run
 
 format: ## Format code
 	@echo "${GREEN}🎨 Formatting code...${RESET}"
-	docker-compose run --rm backend gofmt -w .
+	docker-compose run --rm media-vault-api gofmt -w .
 
 ## Monitoring
 monitor: ## Open monitoring dashboard

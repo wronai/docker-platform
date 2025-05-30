@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"media-vault/internal/services"
+	"github.com/wronai/media-vault-backend/internal/services"
 )
 
 type PartnerHandler struct {
