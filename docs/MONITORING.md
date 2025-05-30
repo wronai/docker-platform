@@ -44,17 +44,17 @@ graph TD
 ## 🖥️ Accessing Dashboards
 
 ### Grafana
-- **URL**: http://your-server:3000
+- **URL**: http://localhost:3000
 - **Default Credentials**:
   - Username: `admin`
   - Password: `admin` (change on first login)
 
 ### Prometheus
-- **URL**: http://your-server:9090
-- **API**: http://your-server:9090/api/v1/query
+- **URL**: http://localhost:9090
+- **API**: http://localhost:9090/api/v1/query
 
 ### Alertmanager
-- **URL**: http://your-server:9093
+- **URL**: http://localhost:9093
 
 ## 📈 Key Metrics
 

@@ -262,6 +262,27 @@
             border-radius: 3px;
             font-weight: bold;
         }
+        
+        /* Style for search matches in TOC */
+        #toc a.search-match {
+            background-color: rgba(255, 235, 59, 0.2);
+            border-left: 3px solid #ffeb3b;
+            padding-left: 5px;
+            margin-left: -8px;
+        }
+        
+        /* Ensure TOC items are properly spaced when filtered */
+        #toc li {
+            margin: 4px 0;
+        }
+        
+        /* Style for no results message */
+        #no-results {
+            padding: 20px;
+            text-align: center;
+            color: #6a737d;
+            font-style: italic;
+        }
 
         .markdown-body blockquote {
             border-left: 0.25em solid #dfe2e5;
@@ -634,32 +655,137 @@
             const searchInput = document.getElementById('search');
             if (!searchInput) return;
             
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
+            // Store original TOC structure
+            let originalTocStructure = null;
+            
+            // Function to show all content sections
+            function showAllSections() {
+                document.querySelectorAll('.markdown-body > *').forEach(el => {
+                    el.style.display = '';
+                });
+                const noResults = document.getElementById('no-results');
+                if (noResults) noResults.remove();
+            }
+            
+            // Function to build TOC from filtered items
+            function buildFilteredToc(searchTerm) {
+                const toc = document.getElementById('toc');
+                
                 if (!searchTerm) {
-                    // Reset view if search is empty
-                    document.querySelectorAll('.markdown-body *').forEach(el => {
-                        el.style.display = '';
+                    // Restore original TOC if search is empty
+                    if (originalTocStructure) {
+                        toc.innerHTML = '';
+                        toc.appendChild(originalTocStructure.cloneNode(true));
+                    }
+                    showAllSections();
+                    return true; // Indicates we're showing all content
+                }
+                
+                const searchLower = searchTerm.toLowerCase();
+                let hasMatches = false;
+                
+                // Create a new container for filtered items
+                const filteredToc = document.createElement('div');
+                filteredToc.style.display = 'none'; // Start hidden
+                
+                // Helper function to check if an element has matching text
+                function hasMatchingText(element) {
+                    return element.textContent.toLowerCase().includes(searchLower);
+                }
+                
+                // Process each top-level item
+                Array.from(originalTocStructure.children).forEach(item => {
+                    const link = item.querySelector('a');
+                    if (!link) return;
+                    
+                    // Check if this item has matching text
+                    if (hasMatchingText(item)) {
+                        const clone = item.cloneNode(true);
+                        filteredToc.appendChild(clone);
+                        hasMatches = true;
+                    }
+                });
+                
+                // Update the TOC
+                toc.innerHTML = '';
+                if (hasMatches) {
+                    filteredToc.style.display = ''; // Show if we have matches
+                    toc.appendChild(filteredToc);
+                    // Highlight matching text in TOC
+                    document.querySelectorAll('#toc a').forEach(link => {
+                        const text = link.textContent;
+                        const regex = new RegExp(`(${searchTerm})`, 'gi');
+                        link.innerHTML = text.replace(regex, '<span class="search-highlight">$1</span>');
                     });
+                } else {
+                    // Completely clear the TOC when no matches
+                    toc.innerHTML = '';
+                }
+                
+                return hasMatches; // Return whether we found any matches
+            }
+            
+            // Function to filter content based on search
+            function filterContent(searchTerm, hasTocMatches = true) {
+                if (!searchTerm) {
+                    showAllSections();
                     return;
                 }
                 
-                // Search in headings and paragraphs
-                const searchableElements = document.querySelectorAll('.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body p, .markdown-body li');
-                let foundResults = false;
+                // Clear any existing no-results message
+                const existingNoResults = document.getElementById('no-results');
+                if (existingNoResults) {
+                    existingNoResults.remove();
+                }
                 
-                searchableElements.forEach(el => {
-                    const text = el.textContent.toLowerCase();
-                    const isMatch = text.includes(searchTerm);
-                    
-                    if (isMatch) {
-                        foundResults = true;
-                        el.style.display = '';
-                        // Highlight the matching text
-                        const regex = new RegExp(`(${searchTerm})`, 'gi');
-                        el.innerHTML = el.textContent.replace(regex, '<span class="search-highlight">$1</span>');
-                    } else {
+                // If no TOC matches, hide all content and show no results
+                if (!hasTocMatches) {
+                    document.querySelectorAll('.markdown-body > *').forEach(el => {
                         el.style.display = 'none';
+                    });
+                    
+                    const noResults = document.createElement('div');
+                    noResults.id = 'no-results';
+                    noResults.textContent = 'No results found';
+                    noResults.style.padding = '20px';
+                    noResults.style.textAlign = 'center';
+                    noResults.style.color = '#6a737d';
+                    document.querySelector('.markdown-body').prepend(noResults);
+                    return;
+                }
+                
+                const sections = document.querySelectorAll('.markdown-body > h1, .markdown-body > h2, .markdown-body > h3, .markdown-body > h4, .markdown-body > h5, .markdown-body > h6');
+                let foundResults = false;
+                const searchLower = searchTerm.toLowerCase();
+                
+                // First, hide all sections
+                document.querySelectorAll('.markdown-body > *').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // Show sections that match the search
+                sections.forEach(section => {
+                    const sectionText = section.textContent.toLowerCase();
+                    if (sectionText.includes(searchLower)) {
+                        // Show this section and all content until the next section
+                        let next = section.nextElementSibling;
+                        section.style.display = '';
+                        
+                        // Highlight matching text in the section
+                        const regex = new RegExp(`(${searchTerm})`, 'gi');
+                        section.innerHTML = section.textContent.replace(regex, '<span class="search-highlight">$1</span>');
+                        
+                        // Show content until the next section
+                        while (next && !next.matches('h1, h2, h3, h4, h5, h6')) {
+                            next.style.display = '';
+                            // Highlight in content
+                            if (next.textContent.toLowerCase().includes(searchLower)) {
+                                next.innerHTML = next.textContent.replace(regex, '<span class="search-highlight">$1</span>');
+                            }
+                            next = next.nextElementSibling;
+                        }
+                        
+                        foundResults = true;
                     }
                 });
                 
@@ -669,7 +795,7 @@
                     if (!noResults) {
                         const noResultsEl = document.createElement('div');
                         noResultsEl.id = 'no-results';
-                        noResultsEl.textContent = 'No results found';
+                        noResultsEl.textContent = 'No results found in content';
                         noResultsEl.style.padding = '20px';
                         noResultsEl.style.textAlign = 'center';
                         noResultsEl.style.color = '#6a737d';
@@ -677,6 +803,27 @@
                     }
                 } else if (noResults) {
                     noResults.remove();
+                }
+            }
+            
+            // Store original TOC structure on first search
+            searchInput.addEventListener('focus', () => {
+                if (!originalTocStructure) {
+                    originalTocStructure = document.getElementById('toc').cloneNode(true);
+                }
+            }, { once: true });
+            
+            // Handle search input
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.trim();
+                const hasMatches = buildFilteredToc(searchTerm);
+                filterContent(searchTerm, hasMatches);
+            });
+            
+            // Handle search clear (when clicking the X in the search box)
+            searchInput.addEventListener('search', (e) => {
+                if (!e.target.value) {
+                    buildFilteredToc('');
                 }
             });
         }

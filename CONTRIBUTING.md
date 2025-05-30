@@ -33,7 +33,7 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. We ar
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/your-username/docker-platform.git
+   git clone https://github.com/wronai/docker-platform.git
    cd docker-platform
    ```
 
