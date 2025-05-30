@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/wronai/media-vault-backend/internal/models"
@@ -140,7 +142,7 @@ func (h *UploadHandler) BulkUpload(c *fiber.Ctx) error {
 	files := form.File["files"]
 	if len(files) == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "No files uploaded",
+			"error": "No files uploaded. Use the 'files' form field to upload multiple files.",
 		})
 	}
 
@@ -150,10 +152,14 @@ func (h *UploadHandler) BulkUpload(c *fiber.Ctx) error {
 
 	// Process each file
 	var uploadedPhotos []*models.Photo
+	var uploadErrors []string
+
 	for _, fileHeader := range files {
 		// Check file size (max 10MB)
 		if fileHeader.Size > 10<<20 {
-			continue // Skip files that are too large
+			errMsg := fmt.Sprintf("File '%s' is too large. Maximum size is 10MB", fileHeader.Filename)
+			uploadErrors = append(uploadErrors, errMsg)
+			continue
 		}
 
 		// Check file type
@@ -163,55 +169,58 @@ func (h *UploadHandler) BulkUpload(c *fiber.Ctx) error {
 			".jpeg": true,
 			".png":  true,
 			".gif":  true,
+			".webp": true,
 		}
 
 		if !allowedTypes[ext] {
-			continue // Skip unsupported file types
-		}
-
-		// Upload the file
-		photo, err := h.photoService.UploadPhoto(c.Context(), fileHeader, userID, "")
-		if err != nil {
-			log.Printf("Failed to upload file %s: %v", fileHeader.Filename, err)
+			errMsg := fmt.Sprintf("File '%s' has an unsupported type. Only JPG, JPEG, PNG, GIF, and WebP are allowed", fileHeader.Filename)
+			uploadErrors = append(uploadErrors, errMsg)
 			continue
 		}
 
-		// Update photo with additional metadata if provided
-		if description != "" || tags != "" {
-			updateData := map[string]interface{}{
-				"description": description,
-			}
+		// Prepare metadata
+		metadata := make(map[string]interface{})
+		if description != "" {
+			metadata["description"] = description
+		}
+		if tags != "" {
+			metadata["tags"] = tags
+		}
 
-			if tags != "" {
-				updateData["tags"] = tags
-			}
-
-			_, err = h.photoService.UpdatePhoto(c.Context(), photo.ID, updateData)
-			if err != nil {
-				log.Printf("Failed to update photo metadata: %v", err)
-			}
-
-			// Update the photo object with the new data
-			if description != "" {
-				desc := description
-				photo.Description = &desc
-			}
-			if tags != "" {
-				tagsStr := tags
-				photo.Tags = &tagsStr
-			}
+		// Upload the file
+		photo, err := h.photoService.UploadPhoto(c.Context(), userID, fileHeader, metadata)
+		if err != nil {
+			errMsg := fmt.Sprintf("Failed to upload file '%s': %v", fileHeader.Filename, err)
+			uploadErrors = append(uploadErrors, errMsg)
+			continue
 		}
 
 		uploadedPhotos = append(uploadedPhotos, photo)
 	}
 
+	// If no files were uploaded successfully, return an error
 	if len(uploadedPhotos) == 0 {
+		errMsg := "No files were uploaded successfully"
+		if len(uploadErrors) > 0 {
+			errMsg = strings.Join(uploadErrors, "; ")
+		}
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "No files were uploaded. Make sure files are valid images and under 10MB",
+			"error": errMsg,
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(uploadedPhotos)
+	// If there were some errors but some files were uploaded successfully
+	if len(uploadErrors) > 0 {
+		// We still return a 200 status but include the errors in the response
+		return c.JSON(fiber.Map{
+			"photos":       uploadedPhotos,
+			"error_count":  len(uploadErrors),
+			"errors":       uploadErrors,
+			"message":      fmt.Sprintf("Uploaded %d files with %d errors", len(uploadedPhotos), len(uploadErrors)),
+		})
+	}
+
+	return c.JSON(uploadedPhotos)
 }
 
 // Helper function to get content type from file extension

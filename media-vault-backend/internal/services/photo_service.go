@@ -6,7 +6,6 @@ import (
 	"mime/multipart"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/valyala/fasthttp"
 	"github.com/wronai/media-vault-backend/internal/models"
 )

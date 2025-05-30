@@ -1,13 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"mime/multipart"
-	"net/http"
-	"strconv"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/wronai/media-vault-backend/internal/models"
 	"github.com/wronai/media-vault-backend/internal/services"
 )
 
