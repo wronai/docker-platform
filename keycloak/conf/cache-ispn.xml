@@ -1,0 +1,43 @@
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:12.1"
+    xmlns="urn:infinispan:config:12.1">
+
+    <jgroups>
+        <stack name="tcp" extends="tcp">
+            <TCP bind_port="7800" port_range="30" recv_buf_size="20000000" send_buf_size="640000"/>
+            <JDBC_PING connection_url="jdbc:postgresql://keycloak-db:5432/keycloak"
+                      connection_username="${env.KEYCLOAK_DATABASE_USER}"
+                      connection_password="${env.KEYCLOAK_DATABASE_PASSWORD}"
+                      initialize_sql="CREATE TABLE IF NOT EXISTS JGROUPSPING (own_addr VARCHAR(200) NOT NULL, cluster_name VARCHAR(200) NOT NULL, updated TIMESTAMP, ping_data BYTEA, CONSTRAINT pk_jgroupsping PRIMARY KEY (own_addr, cluster_name))"/>
+            <MERGE3 min_interval="10000" max_interval="30000"/>
+            <FD_SOCK/>
+            <FD_ALL timeout="30000" interval="5000" />
+            <VERIFY_SUSPECT timeout="1500" />
+            <pbcast.NAKACK2 xmit_interval="500" xmit_table_num_rows="100" xmit_msgs_min_size="5000" use_mcast_xmit="false" discard_delivered_msgs="true"/>
+            <UNICAST3 xmit_interval="500" xmit_table_num_rows="10" xmit_table_max_compaction_time="10000" conn_close_timeout="5000" />
+            <pbcast.STABLE stability_delay="500" desired_avg_gossip="5000" max_bytes="400000"/>
+            <pbcast.GMS print_local_addr="true" join_timeout="3000" max_bundling_time="500"/>
+            <UFC max_credits="2000000" min_threshold="0.4"/>
+            <MFC max_credits="2000000" min_threshold="0.4"/>
+            <FRAG3/>
+        </stack>
+    </jgroups>
+
+    <cache-container name="keycloak">
+        <transport stack="tcp" node-name="${jboss.node.name:keycloak}"/>
+        <local-cache name="realms"/>
+        <local-cache name="users"/>
+        <local-cache name="sessions"/>
+        <local-cache name="offlineSessions"/>
+        <local-cache name="loginFailures"/>
+        <local-cache name="work"/>
+        <local-cache name="authorization"/>
+        <local-cache name="keys">
+            <expiration max-idle="3600000"/>
+        </local-cache>
+        <local-cache name="actionTokens">
+            <expiration max-idle="-1" interval="300000"/>
+        </local-cache>
+    </cache-container>
+</infinispan>

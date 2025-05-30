@@ -13,24 +13,51 @@ RESET  := $(shell tput -Txterm sgr0)
 # Phony targets
 .PHONY: help \
         init \
-        up down restart \
+        up up-build down restart \
         build rebuild \
         test test-unit test-integration test-e2e \
         lint format \
         logs \
-        clean \
-        setup-keycloak \
+        clean clean-all \
+        setup-keycloak keycloak-clean keycloak-export \
         deploy \
-        monitor
+        monitor monitoring monitoring-down monitoring-restart monitoring-logs monitoring-status \
+        grafana prometheus alerts \
+        status shell-api shell-keycloak \
+        dev-start prod-setup backup \
+        keycloak keycloak-db media-vault-api media-vault-analyzer nsfw-analyzer flutter-web media-vault-admin caddy redis
 
 ## Help
 help: ## Show this help
+	@echo 'Media Vault - Available Commands:'
+	@echo '================================='
 	@echo ''
-	@echo 'Usage:'
-	@echo '  ${YELLOW}make${RESET} ${GREEN}<target>${RESET}'
+	@echo '🚀 Quick Start:'
+	@echo '  make up                     Start basic application stack'
+	@echo '  make up-build              Rebuild and start all services'
+	@echo '  make full-stack            Complete setup with monitoring'
+	@echo '  make dev-start             Quick start for development'
 	@echo ''
-	@echo 'Targets:'
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  ${YELLOW}%-20s${GREEN}%s${RESET}\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
+	@echo '📊 Monitoring:'
+	@echo '  make monitoring            Start monitoring stack'
+	@echo '  make monitoring-status     Show monitoring status'
+	@echo '  make monitoring-logs       Show monitoring logs'
+	@echo '  make grafana               Open Grafana (http://localhost:3333)'
+	@echo '  make prometheus            Open Prometheus (http://localhost:9090)'
+	@echo '  make alerts                Open AlertManager (http://localhost:9093)'
+	@echo ''
+	@echo '🔐 Authentication:'
+	@echo '  make setup-keycloak         Configure Keycloak'
+	@echo '  make keycloak-clean        Reset Keycloak config'
+	@echo '  make keycloak-export       Export Keycloak configuration'
+	@echo ''
+	@echo '🛠️  Management:'
+	@echo '  make down                  Stop all services'
+	@echo '  make clean                Clean up containers and volumes'
+	@echo '  make clean-all            Remove all containers, volumes, and images'
+	@echo '  make logs                 Show application logs'
+	@echo '  make status               Show container status'
+	@echo '  make backup               Create database backup'
 
 ## Environment
 init: ## Initialize development environment
@@ -52,16 +79,27 @@ down: ## Stop all services
 	@echo "${YELLOW}🛑 Stopping all services...${RESET}"
 	docker-compose down
 
-restart: down up ## Restart all services
+restart: ## Restart all services
+	@echo "${YELLOW}🔄 Restarting all services...${RESET}"
+	docker-compose restart
 
 logs: ## View logs from all services
 	docker-compose logs -f
+
+status: ## Show container status
+	docker-compose ps
+
+shell-api: ## Open shell in API container
+	docker-compose exec media-vault-api sh
+
+shell-keycloak: ## Open shell in Keycloak container
+	docker-compose exec keycloak bash
 
 ## Development
 dev: up ## Start development environment
 
 run-browse: up ## Start services and open in browser
-	@echo "${GREEN}🌐 Opening application in browser...${RESET}
+	@echo "${GREEN}🌐 Opening application in browser...${RESET}"
 	@if command -v xdg-open > /dev/null; then \
 		xdg-open http://localhost; \
 	elif command -v open > /dev/null; then \
@@ -69,14 +107,6 @@ run-browse: up ## Start services and open in browser
 	else \
 		echo "${YELLOW}Could not detect the web browser to use. Please open http://localhost manually${RESET}"; \
 	fi
-
-watch-backend: ## Watch backend for changes and rebuild
-	@echo "${GREEN}👀 Watching backend for changes...${RESET}"
-	docker-compose -f docker-compose.dev.yml up media-vault-api
-
-watch-frontend: ## Watch frontend for changes and rebuild
-	@echo "${GREEN}👀 Watching frontend for changes...${RESET}"
-	docker-compose -f docker-compose.dev.yml up flutter-web
 
 ## Testing
 test: test-unit test-integration ## Run all tests
@@ -108,15 +138,56 @@ format: ## Format code
 	docker-compose run --rm media-vault-api gofmt -w .
 
 ## Monitoring
-monitor: ## Open monitoring dashboard
-	@echo "${GREEN}📊 Opening monitoring dashboard...${RESET}"
-	@echo "${YELLOW}Grafana: http://localhost:3000${RESET} (admin/grafana)"
-	@echo "${YELLOW}Prometheus: http://localhost:9090${RESET}"
+monitoring: ## Start monitoring stack
+	@echo "${GREEN}📊 Starting monitoring stack...${RESET}"
+	docker-compose -f docker-compose.monitoring.yml up -d
 
-## Keycloak
+monitoring-down: ## Stop monitoring stack
+	@echo "${YELLOW}🛑 Stopping monitoring stack...${RESET}"
+	docker-compose -f docker-compose.monitoring.yml down
+
+monitoring-restart: ## Restart monitoring stack
+	@echo "🔄 Restarting monitoring stack..."
+	docker-compose -f docker-compose.monitoring.yml restart
+
+monitoring-logs: ## Show monitoring logs
+	@echo "📜 Showing monitoring logs..."
+	docker-compose -f docker-compose.monitoring.yml logs -f
+
+monitoring-status: ## Show monitoring status
+	@echo "📊 Monitoring Status:"
+	@echo "===================="
+	docker-compose -f docker-compose.monitoring.yml ps
+
+grafana: ## Open Grafana dashboard
+	@echo "🌐 Opening Grafana..."
+	@echo "URL: http://localhost:3333"
+	@echo "Login: admin / grafana123"
+
+prometheus: ## Open Prometheus dashboard
+	@echo "🌐 Opening Prometheus..."
+	@echo "URL: http://localhost:9090"
+
+alerts: ## Open AlertManager
+	@echo "🌐 Opening AlertManager..."
+	@echo "URL: http://localhost:9093"
+
+## Keycloak Management
 setup-keycloak: ## Set up Keycloak with initial configuration
 	@echo "${GREEN}🔐 Setting up Keycloak...${RESET}"
 	./keycloak/setup-keycloak.sh
+
+keycloak-clean: ## Reset Keycloak configuration
+	@echo "${YELLOW}🧹 Cleaning Keycloak configuration...${RESET}"
+	./setup-keycloak.sh --clean
+
+keycloak-export: ## Export Keycloak configuration
+	@echo "${GREEN}💾 Exporting Keycloak configuration...${RESET}"
+	./setup-keycloak.sh --export-only
+
+restart-keycloak: ## Restart Keycloak service
+	@echo "🔄 Restarting Keycloak..."
+	docker-compose restart keycloak
 
 ## Deployment
 deploy: ## Deploy to production
@@ -128,13 +199,13 @@ clean: ## Remove all containers and volumes
 	@echo "${YELLOW}🧹 Cleaning up...${RESET}"
 	docker-compose down -v
 
-dev-clean: clean ## Clean development environment
-	@echo "${YELLOW}🧹 Cleaning development environment...${RESET}
-	rm -rf node_modules
+clean-all: ## Remove all containers, volumes, and images
+	@echo "${YELLOW}🧹 Deep cleaning (containers, volumes, and images)...${RESET}"
+	docker-compose down -v --rmi all --remove-orphans
 
-dist-clean: clean ## Remove all build artifacts and dependencies
-	@echo "${YELLOW}🧹 Deep cleaning...${RESET}
-	docker system prune -a --volumes
+dev-clean: clean ## Clean development environment
+	@echo "${YELLOW}🧹 Cleaning development environment...${RESET}"
+	rm -rf node_modules
 
 ## Documentation
 docs: ## Generate documentation
@@ -142,15 +213,99 @@ docs: ## Generate documentation
 	# TODO: Add documentation generation command
 
 ## Complete Setup
-full-stack: setup-keycloak up monitor ## Start complete stack with monitoring
+full-stack: setup-keycloak up monitoring ## Start complete stack with monitoring
 	@echo "${GREEN}🎉 Media Vault is ready!${RESET}"
 	@echo ""
 	@echo "${YELLOW}📊 Service URLs:${RESET}"
 	@echo "  🌐 Main App: http://localhost"
-	@echo "  📊 Grafana: http://localhost:3000 (admin/grafana)"
+	@echo "  📊 Grafana: http://localhost:3333 (admin/grafana123)"
 	@echo "  📈 Prometheus: http://localhost:9090"
 	@echo "  🔐 Keycloak: http://localhost:8080/admin (admin/admin123)"
 	@echo "  ⚠️  AlertManager: http://localhost:9093"
+
+## Service Management
+# Keycloak Services
+keycloak: ## Start Keycloak identity service
+	@echo "${GREEN}🚀 Starting Keycloak service...${RESET}"
+	docker-compose rm -fsv keycloak 2>/dev/null || true
+	docker-compose up -d --remove-orphans keycloak
+	@echo "✅ Keycloak service started"
+	@echo "🌐 Access at: http://localhost:8080/admin (admin/admin123)"
+
+keycloak-db: ## Start Keycloak database
+	@echo "${GREEN}🚀 Starting Keycloak database...${RESET}"
+	docker-compose rm -fsv keycloak-db 2>/dev/null || true
+	docker-compose up -d --remove-orphans keycloak-db
+	@echo "✅ Keycloak database started"
+
+# Media Vault Services
+media-vault-api: ## Start Media Vault API
+	@echo "${GREEN}🚀 Starting Media Vault API...${RESET}"
+	docker-compose rm -fsv media-vault-api 2>/dev/null || true
+	docker-compose up -d --remove-orphans media-vault-api
+	@echo "✅ Media Vault API started"
+
+media-vault-analyzer: ## Start Media Vault Analyzer (AI Processing)
+	@echo "${GREEN}🚀 Starting Media Vault Analyzer...${RESET}"
+	docker-compose rm -fsv media-vault-analyzer 2>/dev/null || true
+	docker-compose up -d --remove-orphans media-vault-analyzer
+	@echo "✅ Media Vault Analyzer started"
+
+nsfw-analyzer: ## Start NSFW Analyzer Service
+	@echo "${GREEN}🚀 Starting NSFW Analyzer...${RESET}"
+	docker-compose rm -fsv nsfw-analyzer 2>/dev/null || true
+	docker-compose up -d --remove-orphans nsfw-analyzer
+	@echo "✅ NSFW Analyzer started"
+
+# Frontend Services
+flutter-web: ## Start Flutter Web Frontend
+	@echo "${GREEN}🚀 Starting Flutter Web Frontend...${RESET}"
+	docker-compose rm -fsv flutter-web 2>/dev/null || true
+	docker-compose up -d --remove-orphans flutter-web
+	@echo "✅ Flutter Web Frontend started"
+	@echo "🌐 Access at: http://localhost:3000"
+
+media-vault-admin: ## Start Media Vault Admin Panel
+	@echo "${GREEN}🚀 Starting Media Vault Admin Panel...${RESET}"
+	docker-compose rm -fsv media-vault-admin 2>/dev/null || true
+	docker-compose up -d --remove-orphans media-vault-admin
+	@echo "✅ Media Vault Admin Panel started"
+	@echo "🌐 Access at: http://localhost:3001"
+
+# Infrastructure Services
+caddy: ## Start Caddy Reverse Proxy
+	@echo "${GREEN}🚀 Starting Caddy Reverse Proxy...${RESET}"
+	docker-compose rm -fsv caddy 2>/dev/null || true
+	docker-compose up -d --remove-orphans caddy
+	@echo "✅ Caddy Reverse Proxy started"
+
+redis: ## Start Redis Cache
+	@echo "${GREEN}🚀 Starting Redis...${RESET}"
+	docker-compose rm -fsv redis 2>/dev/null || true
+	docker-compose up -d --remove-orphans redis
+	@echo "✅ Redis started"
+
+## Development
+dev-start: clean up ## Quick start for development
+	@echo "🚀 Development environment ready!"
+
+## Production
+prod-setup: ## Production setup instructions
+	@echo "🏭 Production setup..."
+	@echo "⚠️  Remember to:"
+	@echo "   1. Change default passwords"
+	@echo "   2. Configure SSL"
+	@echo "   3. Set up backup strategy"
+	@echo "   4. Configure monitoring"
+
+## Backup
+backup: ## Create database backup
+	@echo "💾 Creating backup..."
+	@mkdir -p backups
+	docker-compose exec media-vault-api sqlite3 /data/media.db ".backup /data/backup_$$(date +%Y%m%d_%H%M%S).db"
+	./setup-keycloak.sh --export-only
+	tar -czf backups/media-vault-backup-$$(date +%Y%m%d).tar.gz data/ uploads/ media-vault-realm-export.json 2>/dev/null || true
+	@echo "✅ Backup created: backups/media-vault-backup-$$(date +%Y%m%d).tar.gz"
 
 ## Infrastructure
 infrastructure: ## Start infrastructure services

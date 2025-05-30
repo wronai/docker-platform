@@ -43,6 +43,58 @@
 - **Grafana**: http://localhost:3000
 - **API Documentation**: http://localhost:8080/api/docs
 
+## 🛠 Service Management
+
+### Individual Service Control
+You can start, stop, and manage individual services using the following commands:
+
+#### Keycloak Services
+```bash
+make keycloak       # Start Keycloak identity service (http://localhost:8080/admin)
+make keycloak-db    # Start Keycloak database
+```
+
+#### Media Vault Services
+```bash
+make media-vault-api         # Start Media Vault API
+make media-vault-analyzer    # Start AI Processing service
+make nsfw-analyzer          # Start NSFW content detection
+```
+
+#### Frontend Services
+```bash
+make flutter-web          # Start Flutter Web Frontend (http://localhost:3000)
+make media-vault-admin    # Start Admin Panel (http://localhost:3001)
+```
+
+#### Infrastructure Services
+```bash
+make caddy    # Start Caddy Reverse Proxy
+make redis    # Start Redis Cache
+```
+
+### Common Operations
+
+#### Start All Services
+```bash
+make up
+```
+
+#### Stop All Services
+```bash
+make down
+```
+
+#### View Logs
+```bash
+make logs
+```
+
+#### Rebuild and Restart a Service
+```bash
+docker-compose up -d --build <service-name>
+```
+
 ## ✨ Key Features
 
 ### Core Features
@@ -94,6 +146,16 @@ Media Vault is built on a modern microservices architecture:
 - User and role management
 - System health monitoring
 - Backup and recovery
+
+```bash
+make media-vault-admin
+```
+or
+```bash
+docker-compose up -d --remove-orphans media-vault-admin
+```
+
+![media-vault-admin.png](media-vault-admin.png)
 
 ## 📂 Project Structure
 

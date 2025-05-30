@@ -49,11 +49,13 @@ services:
       
       # Cache and clustering configuration
       KEYCLOAK_CACHE: local
-      KEYCLOAK_CACHE_STACK: local
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
       
       # Host configuration
       KEYCLOAK_HOSTNAME: ${KC_HOSTNAME:-localhost}
-      KC_HOSTNAME_STRICT: "false"
       KEYCLOAK_HOSTNAME_STRICT_HTTPS: false
       
       # JVM settings
@@ -81,6 +83,7 @@ services:
       retries: 10
       start_period: 120s
     volumes:
+      - ./keycloak/conf/cache-ispn.xml:/opt/bitnami/keycloak/conf/cache-ispn.xml:ro
       - ./keycloak/themes:/opt/bitnami/keycloak/themes
       - ./keycloak/certs:/opt/bitnami/keycloak/certs
       - ./keycloak/import:/opt/bitnami/keycloak/data/import
