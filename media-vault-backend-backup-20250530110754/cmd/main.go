@@ -46,7 +46,6 @@ func main() {
 	adminHandler := handlers.NewAdminHandler(vaultService)
 	partnerHandler := handlers.NewPartnerHandler(photoService, sharingService)
 	uploadHandler := handlers.NewUploadHandler(vaultService, photoService, descriptionService)
-	photoHandler := handlers.NewPhotoHandler(photoService)
 
 	// Fiber app configuration
 	app := fiber.New(fiber.Config{
@@ -102,7 +101,6 @@ func main() {
 	// Vault endpoints (User level)
 	vault := api.Group("/vault")
 	vault.Post("/upload", uploadHandler.UploadSingle)
-	vault.Post("/upload/bulk", uploadHandler.BulkUpload)
 	vault.Get("/files", vaultHandler.GetUserFiles)
 	vault.Get("/files/:id", vaultHandler.GetFile)
 	vault.Put("/files/:id", vaultHandler.UpdateFile)
@@ -114,14 +112,11 @@ func main() {
 
 	// Photo management endpoints
 	photos := api.Group("/photos")
-	photos.Get("/", photoHandler.ListPhotos)
-	photos.Get("/:id", photoHandler.GetPhoto)
-	photos.Put("/:id", photoHandler.UpdatePhoto)
-	photos.Delete("/:id", photoHandler.DeletePhoto)
-	photos.Get("/:id/thumbnail", photoHandler.GetThumbnail)
-	photos.Put("/:id/description", photoHandler.UpdateDescription)
-	photos.Post("/:id/generate-description", photoHandler.GenerateDescription)
-	photos.Get("/:id/shared-with", photoHandler.GetSharedWith)
+	photos.Get("/", vaultHandler.GetUserPhotos)
+	photos.Get("/:id", vaultHandler.GetPhoto)
+	photos.Put("/:id/description", vaultHandler.UpdatePhotoDescription)
+	photos.Post("/:id/generate-description", vaultHandler.GenerateDescription)
+	photos.Get("/:id/shared-with", vaultHandler.GetPhotoSharing)
 
 	// Partner endpoints (requires partner role)
 	partner := api.Group("/partner")
