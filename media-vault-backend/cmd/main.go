@@ -43,10 +43,10 @@ func main() {
 	sharingService := services.NewSharingService(db)
 
 	// Initialize handlers
-	vaultHandler := handlers.NewVaultHandler(vaultService, photoService)
-	adminHandler := handlers.NewAdminHandler(vaultService)
+	vaultHandler := handlers.NewVaultHandler(vaultService)
+	adminHandler := handlers.NewAdminHandler()
 	partnerHandler := handlers.NewPartnerHandler(photoService, sharingService)
-	uploadHandler := handlers.NewUploadHandler(vaultService, photoService, descriptionService)
+	uploadHandler := handlers.NewUploadHandler(*vaultService, *photoService, *descriptionService)
 	photoHandler := handlers.NewPhotoHandler(photoService)
 
 	// Create Fiber app
