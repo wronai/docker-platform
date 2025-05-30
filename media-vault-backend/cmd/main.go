@@ -42,6 +42,11 @@ func main() {
 	descriptionService := services.NewDescriptionService()
 	sharingService := services.NewSharingService(db)
 
+	// Initialize auth middleware
+	authMiddleware := auth.NewAuthMiddleware(auth.JWTConfig{
+		SigningKey: []byte(os.Getenv("JWT_SECRET")),
+	})
+
 	// Initialize handlers
 	vaultHandler := handlers.NewVaultHandler(vaultService)
 	adminHandler := handlers.NewAdminHandler()
@@ -80,21 +85,38 @@ func main() {
 	api := app.Group("/api/v1")
 
 
-	// Auth routes
+	// Auth routes (placeholder - implement these handlers)
 	authGroup := api.Group("/auth")
 	{
-		authGroup.Post("/login", handlers.Login)
-		authGroup.Post("/register", handlers.Register)
-		authGroup.Post("/refresh", handlers.RefreshToken)
-		authGroup.Post("/logout", handlers.Logout)
+		authGroup.Post("/login", func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{
+				"error": "Login endpoint not implemented",
+			})
+		})
+		authGroup.Post("/register", func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{
+				"error": "Register endpoint not implemented",
+			})
+		})
+		authGroup.Post("/refresh", func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{
+				"error": "Refresh token endpoint not implemented",
+			})
+		})
+		authGroup.Post("/logout", func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{
+				"error": "Logout endpoint not implemented",
+			})
+		})
 	}
 
 	// Protected routes
-	protected := api.Use(auth.Protected())
+	protected := api.Use(authMiddleware)
 	{
 		// Vault routes
 		vault := protected.Group("/vault")
 		{
+			// Vault routes
 			vault.Get("", vaultHandler.GetVault)
 			vault.Post("/upload", uploadHandler.UploadSingle)
 			vault.Post("/upload/bulk", uploadHandler.BulkUpload)
@@ -128,6 +150,7 @@ func main() {
 		// Admin routes
 		admin := protected.Group("/admin", auth.RequireRole("admin"))
 		{
+			// Admin routes
 			admin.Get("/users", adminHandler.ListUsers)
 			admin.Post("/users", adminHandler.CreateUser)
 			admin.Get("/users/:id", adminHandler.GetUser)
